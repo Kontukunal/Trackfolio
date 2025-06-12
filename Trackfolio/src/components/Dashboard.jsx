@@ -1,13 +1,15 @@
 // src/components/Dashboard.jsx
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
 import PortfolioSummary from "./PortfolioSummary";
 import PerformanceChart from "./PerformanceChart";
 import AssetAllocationChart from "./AssetAllocationChart";
 import RecentTransactions from "./RecentTransactions";
 import MarketOverview from "./MarketOverview";
 import Watchlist from "./Watchlist";
+import AssetManagement from "./AssetManagement";
 import { useMarketData } from "../hooks/useMarketData";
+import { FiGrid, FiPieChart, FiList } from "react-icons/fi";
 
 // Define mockPortfolioData outside the component
 const mockPortfolioData = {
@@ -69,17 +71,82 @@ const mockPortfolioData = {
 };
 
 const Dashboard = () => {
-  const [portfolioData, setPortfolioData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState("1M");
-  const { marketData } = useMarketData(["AAPL", "BTC", "ETH", "SPY"]);
+  const [viewMode, setViewMode] = useState("dashboard");
+  const { marketData, refreshData } = useMarketData([
+    "AAPL",
+    "BTC",
+    "ETH",
+    "SPY",
+    "QQQ",
+    "DIA",
+    "GLD",
+  ]);
+
+  const [assets, setAssets] = useState([
+    {
+      id: 1,
+      symbol: "AAPL",
+      name: "Apple Inc.",
+      type: "Stock",
+      amount: 10,
+      averageCost: 150.25,
+      purchaseDate: "2023-01-15",
+      totalReturn: 16.8,
+      annualizedReturn: 28.5,
+    },
+    {
+      id: 2,
+      symbol: "BTC",
+      name: "Bitcoin",
+      type: "Crypto",
+      amount: 0.5,
+      averageCost: 28000,
+      purchaseDate: "2023-03-10",
+      totalReturn: 1.8,
+      annualizedReturn: 7.2,
+    },
+    {
+      id: 3,
+      symbol: "ETH",
+      name: "Ethereum",
+      type: "Crypto",
+      amount: 2,
+      averageCost: 1700,
+      purchaseDate: "2023-04-05",
+      totalReturn: 5.9,
+      annualizedReturn: 35.4,
+    },
+  ]);
+
+  // Memoize portfolio data to prevent unnecessary re-renders
+  const portfolioData = useMemo(() => mockPortfolioData, []);
+
+  // Memoize the time range buttons
+  const timeRangeButtons = useMemo(
+    () =>
+      ["1D", "1W", "1M", "3M", "1Y", "ALL"].map((range) => (
+        <button
+          key={range}
+          onClick={() => setTimeRange(range)}
+          className={`px-3 py-1 rounded-md text-sm ${
+            timeRange === range
+              ? "bg-indigo-600 text-white"
+              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+          } transition`}
+        >
+          {range}
+        </button>
+      )),
+    [timeRange]
+  );
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Simulate API fetch
         setTimeout(() => {
-          setPortfolioData(mockPortfolioData);
           setLoading(false);
         }, 1000);
       } catch (error) {
@@ -89,7 +156,15 @@ const Dashboard = () => {
     };
 
     fetchData();
-  }, []); // Empty dependency array to run only once
+  }, []);
+
+  const handleRefresh = async () => {
+    await refreshData();
+  };
+
+  const handleUpdateAssets = (updatedAssets) => {
+    setAssets(updatedAssets);
+  };
 
   if (loading) {
     return (
@@ -103,49 +178,75 @@ const Dashboard = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Portfolio Overview
+          {viewMode === "dashboard" ? "Portfolio Overview" : "Asset Management"}
         </h2>
-        <div className="flex space-x-2">
-          {["1D", "1W", "1M", "3M", "1Y", "ALL"].map((range) => (
+        <div className="flex space-x-4">
+          <div className="flex items-center space-x-1 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
             <button
-              key={range}
-              onClick={() => setTimeRange(range)}
-              className={`px-3 py-1 rounded-md text-sm ${
-                timeRange === range
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
-              } transition`}
+              onClick={() => setViewMode("dashboard")}
+              className={`p-2 rounded-md ${
+                viewMode === "dashboard"
+                  ? "bg-white dark:bg-gray-600 shadow"
+                  : "hover:bg-gray-300 dark:hover:bg-gray-600"
+              }`}
             >
-              {range}
+              <FiGrid className="text-gray-700 dark:text-gray-300" />
             </button>
-          ))}
+            <button
+              onClick={() => setViewMode("management")}
+              className={`p-2 rounded-md ${
+                viewMode === "management"
+                  ? "bg-white dark:bg-gray-600 shadow"
+                  : "hover:bg-gray-300 dark:hover:bg-gray-600"
+              }`}
+            >
+              <FiList className="text-gray-700 dark:text-gray-300" />
+            </button>
+          </div>
         </div>
       </div>
 
-      <PortfolioSummary data={portfolioData.summary} marketData={marketData} />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <PerformanceChart
-            data={portfolioData.performance}
-            timeRange={timeRange}
+      {viewMode === "dashboard" ? (
+        <>
+          <PortfolioSummary
+            data={portfolioData.summary}
+            marketData={marketData}
           />
-        </div>
-        <div>
-          <AssetAllocationChart data={portfolioData.allocation} />
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <RecentTransactions transactions={portfolioData.recentTransactions} />
-        </div>
-        <div>
-          <Watchlist marketData={marketData} />
-        </div>
-      </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <PerformanceChart
+                data={portfolioData.performance}
+                timeRange={timeRange}
+                onRefresh={handleRefresh}
+                timeRangeButtons={timeRangeButtons}
+              />
+            </div>
+            <div>
+              <AssetAllocationChart data={portfolioData.allocation} />
+            </div>
+          </div>
 
-      <MarketOverview marketData={marketData} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <RecentTransactions
+                transactions={portfolioData.recentTransactions}
+              />
+            </div>
+            <div>
+              <Watchlist marketData={marketData} />
+            </div>
+          </div>
+
+          <MarketOverview marketData={marketData} />
+        </>
+      ) : (
+        <AssetManagement
+          assets={assets}
+          marketData={marketData}
+          onUpdateAssets={handleUpdateAssets}
+        />
+      )}
     </div>
   );
 };

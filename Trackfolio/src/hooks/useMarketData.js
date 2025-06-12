@@ -1,64 +1,97 @@
-// src/hooks/useMarketData.js
 import { useState, useEffect, useCallback } from "react";
 
 export const useMarketData = (symbols) => {
   const [marketData, setMarketData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
-      // In a real app, replace with actual API calls to Alpha Vantage, CoinGecko, etc.
+      // Simulate API call with mock data
       const mockData = {
-        AAPL: { price: 175.25, change: 1.25, changePercent: 0.72 },
-        BTC: { price: 28500, change: -320, changePercent: -1.11 },
-        ETH: { price: 1800, change: 25, changePercent: 1.41 },
-        SPY: { price: 415.32, change: 2.15, changePercent: 0.52 },
+        AAPL: {
+          price: 175.25 + (Math.random() * 10 - 5),
+          change: 1.25 + (Math.random() * 2 - 1),
+          changePercent: 0.72 + (Math.random() * 2 - 1),
+          symbol: "AAPL",
+        },
+        BTC: {
+          price: 28500 + (Math.random() * 2000 - 1000),
+          change: -320 + (Math.random() * 200 - 100),
+          changePercent: -1.11 + (Math.random() * 2 - 1),
+          symbol: "BTC",
+        },
+        ETH: {
+          price: 1800 + (Math.random() * 200 - 100),
+          change: 25 + (Math.random() * 20 - 10),
+          changePercent: 1.41 + (Math.random() * 2 - 1),
+          symbol: "ETH",
+        },
+        SPY: {
+          price: 415.32 + (Math.random() * 5 - 2.5),
+          change: 2.15 + (Math.random() * 1 - 0.5),
+          changePercent: 0.52 + (Math.random() * 1 - 0.5),
+          symbol: "SPY",
+        },
+        QQQ: {
+          price: 350.75 + (Math.random() * 5 - 2.5),
+          change: 3.25 + (Math.random() * 1 - 0.5),
+          changePercent: 0.93 + (Math.random() * 1 - 0.5),
+          symbol: "QQQ",
+        },
+        DIA: {
+          price: 340.5 + (Math.random() * 5 - 2.5),
+          change: 1.75 + (Math.random() * 1 - 0.5),
+          changePercent: 0.52 + (Math.random() * 1 - 0.5),
+          symbol: "DIA",
+        },
+        GLD: {
+          price: 185.2 + (Math.random() * 2 - 1),
+          change: 0.45 + (Math.random() * 0.5 - 0.25),
+          changePercent: 0.24 + (Math.random() * 0.5 - 0.25),
+          symbol: "GLD",
+        },
       };
 
-      setMarketData(mockData);
-      setLoading(false);
+      // Filter to only include requested symbols
+      const filteredData = {};
+      symbols.forEach((symbol) => {
+        if (mockData[symbol]) {
+          filteredData[symbol] = mockData[symbol];
+        }
+      });
 
-      return mockData; // Return the initial data for the interval function
+      setMarketData((prev) => {
+        // Only update if data has actually changed
+        if (JSON.stringify(prev) !== JSON.stringify(filteredData)) {
+          return filteredData;
+        }
+        return prev;
+      });
+      setLoading(false);
+      setLastUpdated(new Date());
+      return filteredData;
     } catch (error) {
       console.error("Error fetching market data:", error);
       setLoading(false);
       return {};
     }
-  }, [symbols]); // Add symbols as dependency
+  }, [symbols]);
+
+  const refreshData = useCallback(async () => {
+    return await fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     let intervalId;
 
     const loadData = async () => {
-      const initialData = await fetchData();
+      await fetchData();
 
-      // Only set up the interval if we got initial data
-      if (Object.keys(initialData).length > 0) {
-        intervalId = setInterval(() => {
-          const updatedData = { ...initialData };
-          Object.keys(updatedData).forEach((symbol) => {
-            const randomChange = (Math.random() - 0.5) * 10;
-            updatedData[symbol] = {
-              price: parseFloat(
-                (updatedData[symbol].price + randomChange).toFixed(2)
-              ),
-              change: parseFloat(
-                (updatedData[symbol].change + randomChange).toFixed(2)
-              ),
-              changePercent: parseFloat(
-                (
-                  ((updatedData[symbol].price +
-                    randomChange -
-                    (updatedData[symbol].price - updatedData[symbol].change)) /
-                    (updatedData[symbol].price - updatedData[symbol].change)) *
-                  100
-                ).toFixed(2)
-              ),
-            };
-          });
-          setMarketData(updatedData);
-        }, 5000);
-      }
+      // Set up interval only after initial load
+      intervalId = setInterval(() => {
+        fetchData();
+      }, 30000); // Update every 30 seconds
     };
 
     loadData();
@@ -66,9 +99,9 @@ export const useMarketData = (symbols) => {
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [fetchData]); // Only depend on fetchData which is memoized
+  }, [fetchData]);
 
-  return { marketData, loading };
+  return { marketData, loading, lastUpdated, refreshData };
 };
 
 export default useMarketData;
