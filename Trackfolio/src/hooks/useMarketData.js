@@ -1,18 +1,16 @@
 // src/hooks/useMarketData.js
-import { useState, useEffect, useCallback } from "react";
+
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 
 export const useMarketData = (symbols) => {
   const [marketData, setMarketData] = useState({});
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const isMountedRef = useRef(true);
 
-  // Generate random price movement
-  const randomMovement = (basePrice, volatility) => {
-    return basePrice + (Math.random() * volatility * 2 - volatility);
-  };
-
-  const generateDummyData = useCallback(() => {
-    const basePrices = {
+  // Memoize base prices and volatility to prevent unnecessary recalculations
+  const basePrices = useMemo(
+    () => ({
       AAPL: 175,
       TSLA: 250,
       GOOGL: 135,
@@ -22,9 +20,12 @@ export const useMarketData = (symbols) => {
       QQQ: 350,
       DIA: 340,
       GLD: 185,
-    };
+    }),
+    []
+  );
 
-    const volatility = {
+  const volatility = useMemo(
+    () => ({
       AAPL: 5,
       TSLA: 8,
       GOOGL: 4,
@@ -34,8 +35,17 @@ export const useMarketData = (symbols) => {
       QQQ: 2.5,
       DIA: 2.5,
       GLD: 1,
-    };
+    }),
+    []
+  );
 
+  // Generate random price movement - stable reference
+  const randomMovement = useCallback((basePrice, vol) => {
+    return basePrice + (Math.random() * vol * 2 - vol);
+  }, []);
+
+  // Stable reference for generateDummyData
+  const generateDummyData = useCallback(() => {
     const newData = {};
 
     symbols.forEach((symbol) => {
@@ -54,19 +64,28 @@ export const useMarketData = (symbols) => {
     });
 
     return newData;
-  }, [symbols]);
+  }, [symbols, basePrices, volatility, randomMovement]);
 
+  // Stable reference for fetchData
   const fetchData = useCallback(async () => {
     try {
       const newData = generateDummyData();
-      setMarketData(newData);
+      setMarketData((prev) => {
+        // Only update if data has actually changed
+        if (JSON.stringify(prev) !== JSON.stringify(newData)) {
+          return newData;
+        }
+        return prev;
+      });
       setLastUpdated(new Date());
       return newData;
     } catch (error) {
       console.error("Error generating dummy data:", error);
       return {};
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   }, [generateDummyData]);
 
@@ -75,13 +94,9 @@ export const useMarketData = (symbols) => {
   }, [fetchData]);
 
   useEffect(() => {
-    // Initial load
-    fetchData();
+    isMountedRef.current = true;
 
-    // Set up different intervals for different components
     const mainInterval = setInterval(fetchData, 30000); // 30 seconds for most data
-
-    // Faster updates for Market Overview and Watchlist (10 seconds)
     const fastUpdateInterval = setInterval(() => {
       setMarketData((prev) => {
         const updatedData = { ...prev };
@@ -108,13 +123,17 @@ export const useMarketData = (symbols) => {
         });
         return updatedData;
       });
-    }, 60000); // 10 seconds for watchlist and market overview
+    }, 10000);
+
+    // Initial data fetch
+    fetchData();
 
     return () => {
+      isMountedRef.current = false;
       clearInterval(mainInterval);
       clearInterval(fastUpdateInterval);
     };
-  }, [fetchData]);
+  }, []); // Empty dependency array - functions are stable
 
   return { marketData, loading, lastUpdated, refreshData };
 };

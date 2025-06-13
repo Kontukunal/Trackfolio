@@ -6,13 +6,34 @@ import { toast } from "react-toastify";
 const AssetImportExport = ({ assets, onImport }) => {
   const [importData, setImportData] = useState("");
 
+  const validateAsset = (asset) => {
+    const requiredFields = [
+      "symbol",
+      "name",
+      "type",
+      "amount",
+      "averageCost",
+      "purchaseDate",
+    ];
+    return requiredFields.every((field) => asset.hasOwnProperty(field));
+  };
+
   const handleExport = () => {
-    const exportData = JSON.stringify(assets, null, 2);
+    const exportData = JSON.stringify(
+      {
+        version: "1.0",
+        generatedAt: new Date().toISOString(),
+        assets: assets.map(({ id, ...rest }) => rest), // Remove Firebase ID
+      },
+      null,
+      2
+    );
+
     const blob = new Blob([exportData], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `portfolio-assets-${
+    link.download = `portfolio-export-${
       new Date().toISOString().split("T")[0]
     }.json`;
     document.body.appendChild(link);
@@ -24,14 +45,26 @@ const AssetImportExport = ({ assets, onImport }) => {
   const handleImport = () => {
     try {
       const parsedData = JSON.parse(importData);
-      if (!Array.isArray(parsedData)) {
-        throw new Error("Invalid data format");
+
+      if (!parsedData.assets || !Array.isArray(parsedData.assets)) {
+        throw new Error("Invalid data format: missing assets array");
       }
-      onImport(parsedData);
-      toast.success("Assets imported successfully!");
+
+      const validatedAssets = parsedData.assets.filter(validateAsset);
+
+      if (validatedAssets.length !== parsedData.assets.length) {
+        toast.warning("Some assets were invalid and skipped");
+      }
+
+      if (validatedAssets.length === 0) {
+        throw new Error("No valid assets found in import data");
+      }
+
+      onImport(validatedAssets);
+      toast.success(`Successfully imported ${validatedAssets.length} assets`);
       setImportData("");
     } catch (error) {
-      toast.error("Failed to import assets. Please check the data format.");
+      toast.error(`Import failed: ${error.message}`);
       console.error("Import error:", error);
     }
   };
@@ -64,7 +97,7 @@ const AssetImportExport = ({ assets, onImport }) => {
             value={importData}
             onChange={(e) => setImportData(e.target.value)}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white h-32"
-            placeholder="Paste your portfolio JSON data here..."
+            placeholder={`Paste your portfolio JSON data here...\nExample:\n{\n  "assets": [\n    {\n      "symbol": "AAPL",\n      "name": "Apple Inc.",\n      "type": "Stock",\n      "amount": 10,\n      "averageCost": 150.25,\n      "purchaseDate": "2023-01-15"\n    }\n  ]\n}`}
           />
           <button
             onClick={handleImport}
