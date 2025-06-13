@@ -1,3 +1,5 @@
+// src/components/PerformanceChart.jsx
+
 import { useState, useEffect, useMemo } from "react";
 import {
   AreaChart,

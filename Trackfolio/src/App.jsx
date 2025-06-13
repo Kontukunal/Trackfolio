@@ -1,3 +1,5 @@
+// src/App.jsx
+
 import { useState, useEffect } from "react";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { auth } from "./firebase";
@@ -8,9 +10,10 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 import Dashboard from "./components/Dashboard";
-import {Login} from "./components/Login";
-import {Signup} from "./components/Signup";
+import { Login } from "./components/Login";
+import { Signup } from "./components/Signup";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { FiSun, FiMoon, FiLogOut } from "react-icons/fi";
 
@@ -126,7 +129,9 @@ const AppContent = () => {
 
 const App = () => (
   <ThemeProvider>
-    <AppContent />
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   </ThemeProvider>
 );
 

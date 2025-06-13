@@ -49,7 +49,7 @@ const Watchlist = ({ marketData }) => {
                   }`}
                 >
                   {marketData[item.symbol].changePercent >= 0 ? "↑" : "↓"}{" "}
-                  {Math.abs(marketData[item.symbol].changePercent)}%
+                  {Math.abs(marketData[item.symbol].changePercent).toFixed(2)}%
                 </p>
               </div>
             ) : (

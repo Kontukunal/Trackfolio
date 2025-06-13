@@ -47,7 +47,7 @@ const MarketOverview = ({ marketData }) => {
                   }`}
                 >
                   {marketData[index.symbol].changePercent >= 0 ? "↑" : "↓"}{" "}
-                  {Math.abs(marketData[index.symbol].changePercent)}%
+                  {Math.abs(marketData[index.symbol].changePercent).toFixed(2)}%
                 </p>
               </>
             ) : (
