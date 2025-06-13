@@ -45,13 +45,6 @@ const AssetManagement = ({ marketData }) => {
     { id: "watchlist", name: "Watchlist" },
   ]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   useEffect(() => {
     const fetchAssets = async () => {
       if (!currentUser) return;
@@ -74,18 +67,6 @@ const AssetManagement = ({ marketData }) => {
 
     fetchAssets();
   }, [currentUser]);
-
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-
-    if (active.id !== over.id) {
-      setWidgets((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
-  };
 
   const handleAssetClick = (asset) => {
     setActiveAsset(asset);
@@ -182,41 +163,6 @@ const AssetManagement = ({ marketData }) => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
-          Customize Your Dashboard
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Drag and drop widgets to rearrange your dashboard layout
-        </p>
-
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={widgets}
-            strategy={verticalListSortingStrategy}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {widgets.map((widget) => (
-                <SortableItem key={widget.id} id={widget.id}>
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600 cursor-move">
-                    <h3 className="font-medium text-gray-800 dark:text-white">
-                      {widget.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Drag to reorder
-                    </p>
-                  </div>
-                </SortableItem>
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
-      </div>
-
       <PortfolioStats assets={assets} marketData={marketData} />
 
       <div className="flex justify-between items-center">
