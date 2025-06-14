@@ -1,9 +1,10 @@
-// src/components/AssetImportExport.jsx
 import { useState } from "react";
 import { FiDownload, FiUpload } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { useTheme } from "../context/ThemeContext";
 
 const AssetImportExport = ({ assets, onImport }) => {
+  const { theme, themeConfig } = useTheme();
   const [importData, setImportData] = useState("");
 
   const validateAsset = (asset) => {
@@ -70,8 +71,10 @@ const AssetImportExport = ({ assets, onImport }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+    <div className={`${themeConfig[theme].card} p-6 rounded-lg shadow-sm`}>
+      <h3
+        className={`text-lg font-semibold ${themeConfig[theme].textPrimary} mb-4`}
+      >
         Import/Export Assets
       </h3>
 
@@ -79,30 +82,32 @@ const AssetImportExport = ({ assets, onImport }) => {
         <div>
           <button
             onClick={handleExport}
-            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+            className={`flex items-center space-x-2 px-4 py-2 ${themeConfig[theme].button} rounded-md transition`}
           >
             <FiDownload />
             <span>Export Portfolio</span>
           </button>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+          <p className={`text-sm ${themeConfig[theme].textTertiary} mt-2`}>
             Download all your assets as a JSON file
           </p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label
+            className={`block text-sm font-medium ${themeConfig[theme].textSecondary} mb-2`}
+          >
             Import Portfolio Data (JSON)
           </label>
           <textarea
             value={importData}
             onChange={(e) => setImportData(e.target.value)}
-            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white h-32"
+            className={`w-full p-3 ${themeConfig[theme].borderPrimary} rounded-md ${themeConfig[theme].inputBg} ${themeConfig[theme].textPrimary} h-32`}
             placeholder={`Paste your portfolio JSON data here...\nExample:\n{\n  "assets": [\n    {\n      "symbol": "AAPL",\n      "name": "Apple Inc.",\n      "type": "Stock",\n      "amount": 10,\n      "averageCost": 150.25,\n      "purchaseDate": "2023-01-15"\n    }\n  ]\n}`}
           />
           <button
             onClick={handleImport}
             disabled={!importData.trim()}
-            className="mt-2 flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition disabled:opacity-50"
+            className={`mt-2 flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition disabled:opacity-50`}
           >
             <FiUpload />
             <span>Import Portfolio</span>

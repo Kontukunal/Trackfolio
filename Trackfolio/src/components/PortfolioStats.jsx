@@ -1,9 +1,10 @@
-// src/components/PortfolioStats.jsx
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiTrendingUp, FiTrendingDown, FiPieChart } from "react-icons/fi";
+import { useTheme } from "../context/ThemeContext";
 
 const PortfolioStats = ({ assets, marketData }) => {
+  const { theme, themeConfig } = useTheme();
   const [stats, setStats] = useState({
     totalValue: 0,
     totalCost: 0,
@@ -82,14 +83,18 @@ const PortfolioStats = ({ assets, marketData }) => {
       {/* Total Portfolio Value */}
       <motion.div
         whileHover={{ y: -5 }}
-        className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700"
+        className={`${themeConfig[theme].card} rounded-lg shadow-sm p-4`}
       >
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <h3
+              className={`text-sm font-medium ${themeConfig[theme].textSecondary}`}
+            >
               Portfolio Value
             </h3>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">
+            <p
+              className={`text-2xl font-bold ${themeConfig[theme].textPrimary}`}
+            >
               $
               {stats.totalValue.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
@@ -97,7 +102,9 @@ const PortfolioStats = ({ assets, marketData }) => {
               })}
             </p>
           </div>
-          <div className="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300">
+          <div
+            className={`p-3 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300`}
+          >
             <FiPieChart size={20} />
           </div>
         </div>
@@ -106,15 +113,21 @@ const PortfolioStats = ({ assets, marketData }) => {
       {/* Total Gain/Loss */}
       <motion.div
         whileHover={{ y: -5 }}
-        className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border ${
+        className={`rounded-lg shadow-sm p-4 ${
           stats.totalGain >= 0
-            ? "border-green-100 dark:border-green-900"
-            : "border-red-100 dark:border-red-900"
+            ? "bg-green-50 dark:bg-green-900 border-green-100 dark:border-green-800"
+            : "bg-red-50 dark:bg-red-900 border-red-100 dark:border-red-800"
         }`}
       >
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <h3
+              className={`text-sm font-medium ${
+                stats.totalGain >= 0
+                  ? "text-green-600 dark:text-green-300"
+                  : "text-red-600 dark:text-red-300"
+              }`}
+            >
               Total {stats.totalGain >= 0 ? "Gain" : "Loss"}
             </h3>
             <p
@@ -138,8 +151,8 @@ const PortfolioStats = ({ assets, marketData }) => {
           <div
             className={`p-3 rounded-full ${
               stats.totalGain >= 0
-                ? "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"
-                : "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300"
+                ? "bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300"
+                : "bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300"
             }`}
           >
             {stats.totalGain >= 0 ? (
@@ -155,21 +168,23 @@ const PortfolioStats = ({ assets, marketData }) => {
       {stats.bestPerformer && (
         <motion.div
           whileHover={{ y: -5 }}
-          className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-green-100 dark:border-green-900"
+          className="bg-green-50 dark:bg-green-900 rounded-lg shadow-sm p-4 border border-green-100 dark:border-green-800"
         >
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <h3 className="text-sm font-medium text-green-600 dark:text-green-300">
                 Best Performer
               </h3>
-              <p className="text-lg font-bold text-gray-800 dark:text-white">
+              <p
+                className={`text-lg font-bold ${themeConfig[theme].textPrimary}`}
+              >
                 {stats.bestPerformer.symbol}
               </p>
               <p className="text-green-600 dark:text-green-400">
                 +{stats.bestPerformer.gainPercent.toFixed(2)}%
               </p>
             </div>
-            <div className="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">
+            <div className="p-3 rounded-full bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300">
               <FiTrendingUp size={20} />
             </div>
           </div>
@@ -180,21 +195,23 @@ const PortfolioStats = ({ assets, marketData }) => {
       {stats.worstPerformer && (
         <motion.div
           whileHover={{ y: -5 }}
-          className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-red-100 dark:border-red-900"
+          className="bg-red-50 dark:bg-red-900 rounded-lg shadow-sm p-4 border border-red-100 dark:border-red-800"
         >
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <h3 className="text-sm font-medium text-red-600 dark:text-red-300">
                 Worst Performer
               </h3>
-              <p className="text-lg font-bold text-gray-800 dark:text-white">
+              <p
+                className={`text-lg font-bold ${themeConfig[theme].textPrimary}`}
+              >
                 {stats.worstPerformer.symbol}
               </p>
               <p className="text-red-600 dark:text-red-400">
                 {stats.worstPerformer.gainPercent.toFixed(2)}%
               </p>
             </div>
-            <div className="p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300">
+            <div className="p-3 rounded-full bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300">
               <FiTrendingDown size={20} />
             </div>
           </div>

@@ -1,4 +1,3 @@
-// src/components/PortfolioOverview.jsx
 import { useEffect, useState } from "react";
 import {
   PieChart,
@@ -21,6 +20,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import { useTheme } from "../context/ThemeContext";
 
 const COLORS = [
   "#0088FE",
@@ -32,6 +32,7 @@ const COLORS = [
 ];
 
 const PortfolioOverview = () => {
+  const { theme, themeConfig } = useTheme();
   const { currentUser } = useAuth();
   const [assets, setAssets] = useState([]);
   const [timeRange, setTimeRange] = useState("1M");
@@ -109,9 +110,9 @@ const PortfolioOverview = () => {
   const performanceData = generatePerformanceData();
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+    <div className={`${themeConfig[theme].card} rounded-lg shadow-sm p-6`}>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+        <h2 className={`text-xl font-bold ${themeConfig[theme].textPrimary}`}>
           Portfolio Overview
         </h2>
         <div className="flex space-x-2">
@@ -121,8 +122,8 @@ const PortfolioOverview = () => {
               onClick={() => setTimeRange(range)}
               className={`px-3 py-1 rounded-md text-sm ${
                 timeRange === range
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  ? `${themeConfig[theme].accent} text-white`
+                  : `${themeConfig[theme].bgTertiary} ${themeConfig[theme].textSecondary}`
               }`}
             >
               {range}
@@ -136,9 +137,11 @@ const PortfolioOverview = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
+          className={`${themeConfig[theme].chartBg} p-4 rounded-lg`}
         >
-          <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
+          <h3
+            className={`text-lg font-medium ${themeConfig[theme].textPrimary} mb-4`}
+          >
             Asset Allocation
           </h3>
           <div className="h-64">
@@ -166,8 +169,20 @@ const PortfolioOverview = () => {
                 </Pie>
                 <Tooltip
                   formatter={(value) => [`$${value.toLocaleString()}`, "Value"]}
+                  contentStyle={{
+                    backgroundColor: theme === "dark" ? "#1F2937" : "#FFFFFF",
+                    borderColor: theme === "dark" ? "#374151" : "#E5E7EB",
+                    borderRadius: "0.5rem",
+                  }}
+                  itemStyle={{
+                    color: theme === "dark" ? "#F3F4F6" : "#111827",
+                  }}
                 />
-                <Legend />
+                <Legend
+                  wrapperStyle={{
+                    color: theme === "dark" ? "#F3F4F6" : "#111827",
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -177,18 +192,26 @@ const PortfolioOverview = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: { delay: 0.1 } }}
-          className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
+          className={`${themeConfig[theme].chartBg} p-4 rounded-lg`}
         >
-          <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
+          <h3
+            className={`text-lg font-medium ${themeConfig[theme].textPrimary} mb-4`}
+          >
             Portfolio Performance
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={performanceData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={theme === "dark" ? "#4B5563" : "#E5E7EB"}
+                />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 12 }}
+                  tick={{
+                    fontSize: 12,
+                    fill: theme === "dark" ? "#9CA3AF" : "#6B7280",
+                  }}
                   tickFormatter={(value) => {
                     const date = new Date(value);
                     return timeRange === "1W"
@@ -198,10 +221,15 @@ const PortfolioOverview = () => {
                           day: "numeric",
                         });
                   }}
+                  stroke={theme === "dark" ? "#6B7280" : "#D1D5DB"}
                 />
                 <YAxis
                   tickFormatter={(value) => `$${value.toLocaleString()}`}
-                  tick={{ fontSize: 12 }}
+                  tick={{
+                    fontSize: 12,
+                    fill: theme === "dark" ? "#9CA3AF" : "#6B7280",
+                  }}
+                  stroke={theme === "dark" ? "#6B7280" : "#D1D5DB"}
                 />
                 <Tooltip
                   formatter={(value) => [
@@ -209,6 +237,14 @@ const PortfolioOverview = () => {
                     "Portfolio Value",
                   ]}
                   labelFormatter={(label) => `Date: ${label}`}
+                  contentStyle={{
+                    backgroundColor: theme === "dark" ? "#1F2937" : "#FFFFFF",
+                    borderColor: theme === "dark" ? "#374151" : "#E5E7EB",
+                    borderRadius: "0.5rem",
+                  }}
+                  itemStyle={{
+                    color: theme === "dark" ? "#F3F4F6" : "#111827",
+                  }}
                 />
                 <Line
                   type="monotone"
@@ -230,15 +266,17 @@ const PortfolioOverview = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
+          className={`mt-6 ${themeConfig[theme].chartBg} p-4 rounded-lg`}
         >
-          <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-2">
+          <h3
+            className={`text-lg font-medium ${themeConfig[theme].textPrimary} mb-2`}
+          >
             {selectedAsset.name} Details
           </h3>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className={themeConfig[theme].textSecondary}>
             Value: ${selectedAsset.value.toLocaleString()}
           </p>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className={themeConfig[theme].textSecondary}>
             Percentage: {(selectedAsset.percent * 100).toFixed(1)}%
           </p>
         </motion.div>

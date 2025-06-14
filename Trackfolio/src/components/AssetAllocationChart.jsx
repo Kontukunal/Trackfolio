@@ -1,4 +1,3 @@
-// src/components/AssetAllocationChart.jsx
 import {
   PieChart,
   Pie,
@@ -8,6 +7,7 @@ import {
   Legend,
 } from "recharts";
 import { motion } from "framer-motion";
+import { useTheme } from "../context/ThemeContext";
 
 const COLORS = [
   "#0088FE",
@@ -19,13 +19,17 @@ const COLORS = [
 ];
 
 const AssetAllocationChart = ({ data }) => {
+  const { theme, themeConfig } = useTheme();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700"
+      className={`${themeConfig[theme].card} p-4 rounded-lg shadow-sm`}
     >
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+      <h3
+        className={`text-lg font-semibold ${themeConfig[theme].textPrimary} mb-4`}
+      >
         Asset Allocation
       </h3>
       <div className="h-64">
@@ -52,8 +56,20 @@ const AssetAllocationChart = ({ data }) => {
             </Pie>
             <Tooltip
               formatter={(value) => [`$${value.toLocaleString()}`, "Value"]}
+              contentStyle={{
+                backgroundColor: theme === "dark" ? "#1F2937" : "#FFFFFF",
+                borderColor: theme === "dark" ? "#374151" : "#E5E7EB",
+                borderRadius: "0.5rem",
+              }}
+              itemStyle={{
+                color: theme === "dark" ? "#F3F4F6" : "#111827",
+              }}
             />
-            <Legend />
+            <Legend
+              wrapperStyle={{
+                color: theme === "dark" ? "#F3F4F6" : "#111827",
+              }}
+            />
           </PieChart>
         </ResponsiveContainer>
       </div>

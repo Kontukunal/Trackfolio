@@ -1,4 +1,3 @@
-// src/components/PerformanceComparisonTool.jsx
 import { useState, useEffect } from "react";
 import {
   LineChart,
@@ -11,8 +10,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { FiPlus, FiX } from "react-icons/fi";
+import { useTheme } from "../context/ThemeContext";
 
 const PerformanceComparisonTool = ({ assets, marketData }) => {
+  const { theme, themeConfig } = useTheme();
   const [selectedAssets, setSelectedAssets] = useState([]);
   const [benchmarks, setBenchmarks] = useState(["SPY"]); // Default to S&P 500
   const [timeRange, setTimeRange] = useState("1m");
@@ -109,16 +110,18 @@ const PerformanceComparisonTool = ({ assets, marketData }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+    <div className={`${themeConfig[theme].card} p-6 rounded-lg shadow-sm`}>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+        <h3
+          className={`text-lg font-semibold ${themeConfig[theme].textPrimary}`}
+        >
           Performance Comparison
         </h3>
         <div className="flex gap-2">
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
-            className="block pl-3 pr-8 py-1 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-white dark:bg-gray-700"
+            className={`block pl-3 pr-8 py-1 text-base ${themeConfig[theme].borderPrimary} focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md ${themeConfig[theme].inputBg}`}
           >
             <option value="1m">1 Month</option>
             <option value="3m">3 Months</option>
@@ -147,7 +150,7 @@ const PerformanceComparisonTool = ({ assets, marketData }) => {
           {availableAssets.length > 0 && (
             <button
               onClick={() => setIsAddingAsset(!isAddingAsset)}
-              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
+              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${themeConfig[theme].buttonSecondary}`}
             >
               <FiPlus size={14} className="mr-1" />
               Add Asset
@@ -156,13 +159,15 @@ const PerformanceComparisonTool = ({ assets, marketData }) => {
         </div>
 
         {isAddingAsset && (
-          <div className="mt-2 p-2 border border-gray-200 dark:border-gray-700 rounded-md">
+          <div
+            className={`mt-2 p-2 ${themeConfig[theme].borderPrimary} rounded-md`}
+          >
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {availableAssets.map((asset) => (
                 <button
                   key={`available-${asset.symbol}`}
                   onClick={() => addAsset(asset.symbol)}
-                  className="px-3 py-1 text-xs text-left rounded-md bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600"
+                  className={`px-3 py-1 text-xs text-left rounded-md ${themeConfig[theme].bgTertiary} hover:${themeConfig[theme].bgSecondary}`}
                 >
                   {asset.symbol} - {asset.name}
                 </button>
@@ -173,7 +178,9 @@ const PerformanceComparisonTool = ({ assets, marketData }) => {
       </div>
 
       <div className="mb-4">
-        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <h4
+          className={`text-sm font-medium ${themeConfig[theme].textSecondary} mb-2`}
+        >
           Compare with Benchmarks
         </h4>
         <div className="flex flex-wrap gap-2">
@@ -183,8 +190,8 @@ const PerformanceComparisonTool = ({ assets, marketData }) => {
               onClick={() => toggleBenchmark(symbol)}
               className={`px-3 py-1 rounded-md text-xs font-medium ${
                 benchmarks.includes(symbol)
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  ? `${themeConfig[theme].accent} text-white`
+                  : `${themeConfig[theme].buttonSecondary}`
               }`}
             >
               {symbol}
@@ -200,7 +207,7 @@ const PerformanceComparisonTool = ({ assets, marketData }) => {
               <CartesianGrid
                 strokeDasharray="3 3"
                 vertical={false}
-                stroke="#f0f0f0"
+                stroke={theme === "dark" ? "#4B5563" : "#E5E7EB"}
               />
               <XAxis
                 dataKey="date"
@@ -208,11 +215,17 @@ const PerformanceComparisonTool = ({ assets, marketData }) => {
                   const d = new Date(date);
                   return `${d.getMonth() + 1}/${d.getDate()}`;
                 }}
-                tick={{ fontSize: 12, fill: "#888" }}
+                tick={{
+                  fontSize: 12,
+                  fill: theme === "dark" ? "#9CA3AF" : "#6B7280",
+                }}
               />
               <YAxis
                 tickFormatter={(value) => `$${value.toFixed(2)}`}
-                tick={{ fontSize: 12, fill: "#888" }}
+                tick={{
+                  fontSize: 12,
+                  fill: theme === "dark" ? "#9CA3AF" : "#6B7280",
+                }}
                 width={80}
               />
               <Tooltip
@@ -221,8 +234,20 @@ const PerformanceComparisonTool = ({ assets, marketData }) => {
                   const d = new Date(date);
                   return d.toLocaleDateString();
                 }}
+                contentStyle={{
+                  backgroundColor: theme === "dark" ? "#1F2937" : "#FFFFFF",
+                  borderColor: theme === "dark" ? "#374151" : "#E5E7EB",
+                  borderRadius: "0.5rem",
+                }}
+                itemStyle={{
+                  color: theme === "dark" ? "#F3F4F6" : "#111827",
+                }}
               />
-              <Legend />
+              <Legend
+                wrapperStyle={{
+                  color: theme === "dark" ? "#F3F4F6" : "#111827",
+                }}
+              />
               {[...selectedAssets, ...benchmarks].map((symbol, index) => (
                 <Line
                   key={symbol}
@@ -237,7 +262,9 @@ const PerformanceComparisonTool = ({ assets, marketData }) => {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
+          <div
+            className={`h-full flex items-center justify-center ${themeConfig[theme].textTertiary}`}
+          >
             {selectedAssets.length === 0 && benchmarks.length === 0
               ? "Select assets or benchmarks to compare"
               : "Loading comparison data..."}

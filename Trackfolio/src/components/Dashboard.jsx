@@ -1,15 +1,16 @@
-// src/components/Dashboard.jsx
 import { useState } from "react";
 import { motion } from "framer-motion";
 import AssetManagement from "./AssetManagement";
 import PortfolioOverview from "./PortfolioOverview";
 import PerformanceComparison from "./PerformanceComparison";
-import MarketNews from "./MarketNews"; // New component you'll create
+import MarketNews from "./MarketNews";
 import { useMarketData } from "../hooks/useMarketData";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import { useTheme } from "../context/ThemeContext";
 import "react-tabs/style/react-tabs.css";
 
 const Dashboard = () => {
+  const { theme, themeConfig } = useTheme();
   const { marketData } = useMarketData([
     "AAPL",
     "MSFT",
@@ -25,7 +26,7 @@ const Dashboard = () => {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${themeConfig[theme].bgPrimary}`}>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -35,14 +36,25 @@ const Dashboard = () => {
       </motion.div>
 
       <Tabs>
-        <TabList className="flex border-b border-gray-200 dark:border-gray-700">
-          <Tab className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none cursor-pointer">
+        <TabList
+          className={`flex border-b ${themeConfig[theme].borderPrimary}`}
+        >
+          <Tab
+            className={`px-4 py-2 text-sm font-medium ${themeConfig[theme].textSecondary} hover:${themeConfig[theme].textPrimary} focus:outline-none cursor-pointer`}
+            selectedClassName={`${themeConfig[theme].textPrimary} border-b-2 ${themeConfig[theme].accentText} font-semibold`}
+          >
             My Portfolio
           </Tab>
-          <Tab className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none cursor-pointer">
+          <Tab
+            className={`px-4 py-2 text-sm font-medium ${themeConfig[theme].textSecondary} hover:${themeConfig[theme].textPrimary} focus:outline-none cursor-pointer`}
+            selectedClassName={`${themeConfig[theme].textPrimary} border-b-2 ${themeConfig[theme].accentText} font-semibold`}
+          >
             Performance Tools
           </Tab>
-          <Tab className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none cursor-pointer">
+          <Tab
+            className={`px-4 py-2 text-sm font-medium ${themeConfig[theme].textSecondary} hover:${themeConfig[theme].textPrimary} focus:outline-none cursor-pointer`}
+            selectedClassName={`${themeConfig[theme].textPrimary} border-b-2 ${themeConfig[theme].accentText} font-semibold`}
+          >
             Market News
           </Tab>
         </TabList>

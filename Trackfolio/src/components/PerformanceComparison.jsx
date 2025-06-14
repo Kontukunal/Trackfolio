@@ -1,4 +1,3 @@
-// src/components/PerformanceComparison.jsx
 import { useState, useEffect } from "react";
 import {
   LineChart,
@@ -15,8 +14,19 @@ import { useAuth } from "../context/AuthContext";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { FiX, FiPlus } from "react-icons/fi";
+import { useTheme } from "../context/ThemeContext";
+
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884D8",
+  "#82CA9D",
+];
 
 const PerformanceComparison = () => {
+  const { theme, themeConfig } = useTheme();
   const { currentUser } = useAuth();
   const [assets, setAssets] = useState([]);
   const [selectedAssets, setSelectedAssets] = useState([]);
@@ -47,7 +57,6 @@ const PerformanceComparison = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    // In a real app, fetch historical data from an API
     const generateComparisonData = () => {
       const days = timeRange === "1W" ? 7 : timeRange === "1M" ? 30 : 90;
       const data = [];
@@ -101,19 +110,10 @@ const PerformanceComparison = () => {
     }
   };
 
-  const COLORS = [
-    "#0088FE",
-    "#00C49F",
-    "#FFBB28",
-    "#FF8042",
-    "#8884D8",
-    "#82CA9D",
-  ];
-
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+    <div className={`${themeConfig[theme].card} rounded-lg shadow-sm p-6`}>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+        <h2 className={`text-xl font-bold ${themeConfig[theme].textPrimary}`}>
           Performance Comparison
         </h2>
         <div className="flex space-x-2">
@@ -123,8 +123,8 @@ const PerformanceComparison = () => {
               onClick={() => setTimeRange(range)}
               className={`px-3 py-1 rounded-md text-sm ${
                 timeRange === range
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  ? `${themeConfig[theme].accent} text-white`
+                  : `${themeConfig[theme].bgTertiary} ${themeConfig[theme].textSecondary}`
               }`}
             >
               {range}
@@ -156,7 +156,7 @@ const PerformanceComparison = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowAssetSelector(!showAssetSelector)}
-            className="flex items-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-sm"
+            className={`flex items-center ${themeConfig[theme].buttonSecondary} px-3 py-1 rounded-full text-sm`}
           >
             <FiPlus size={14} className="mr-1" />
             Add Asset
@@ -171,7 +171,7 @@ const PerformanceComparison = () => {
               className={`px-3 py-1 rounded-full text-sm ${
                 benchmarks.includes(benchmark)
                   ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  : `${themeConfig[theme].bgTertiary} ${themeConfig[theme].textSecondary}`
               }`}
             >
               {benchmark}
@@ -185,9 +185,11 @@ const PerformanceComparison = () => {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
-          className="mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
+          className={`${themeConfig[theme].card} mb-6 p-4 rounded-lg shadow-sm overflow-hidden`}
         >
-          <h3 className="text-md font-medium text-gray-800 dark:text-white mb-3">
+          <h3
+            className={`text-md font-medium ${themeConfig[theme].textPrimary} mb-3`}
+          >
             Select Assets to Compare
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
@@ -197,7 +199,7 @@ const PerformanceComparison = () => {
                 <button
                   key={asset.id}
                   onClick={() => handleAddAsset(asset)}
-                  className="px-3 py-2 bg-white dark:bg-gray-600 rounded-md text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-500"
+                  className={`px-3 py-2 ${themeConfig[theme].buttonSecondary} rounded-md text-sm`}
                 >
                   {asset.symbol}
                 </button>
@@ -209,10 +211,16 @@ const PerformanceComparison = () => {
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={comparisonData}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={theme === "dark" ? "#4B5563" : "#E5E7EB"}
+            />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 12 }}
+              tick={{
+                fontSize: 12,
+                fill: theme === "dark" ? "#9CA3AF" : "#6B7280",
+              }}
               tickFormatter={(value) => {
                 const date = new Date(value);
                 return timeRange === "1W"
@@ -222,16 +230,33 @@ const PerformanceComparison = () => {
                       day: "numeric",
                     });
               }}
+              stroke={theme === "dark" ? "#6B7280" : "#D1D5DB"}
             />
             <YAxis
               tickFormatter={(value) => `$${value.toFixed(2)}`}
-              tick={{ fontSize: 12 }}
+              tick={{
+                fontSize: 12,
+                fill: theme === "dark" ? "#9CA3AF" : "#6B7280",
+              }}
+              stroke={theme === "dark" ? "#6B7280" : "#D1D5DB"}
             />
             <Tooltip
               formatter={(value, name) => [`$${value.toFixed(2)}`, name]}
               labelFormatter={(label) => `Date: ${label}`}
+              contentStyle={{
+                backgroundColor: theme === "dark" ? "#1F2937" : "#FFFFFF",
+                borderColor: theme === "dark" ? "#374151" : "#E5E7EB",
+                borderRadius: "0.5rem",
+              }}
+              itemStyle={{
+                color: theme === "dark" ? "#F3F4F6" : "#111827",
+              }}
             />
-            <Legend />
+            <Legend
+              wrapperStyle={{
+                color: theme === "dark" ? "#F3F4F6" : "#111827",
+              }}
+            />
 
             {selectedAssets.map((asset, index) => (
               <Line
