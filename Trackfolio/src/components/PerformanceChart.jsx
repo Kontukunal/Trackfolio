@@ -18,7 +18,7 @@ const PerformanceChart = ({ data, timeRange, onRefresh }) => {
 
   // Memoize the chart data to prevent unnecessary recalculations
   const chartData = useMemo(() => {
-    const rangeData = data[timeRange] || [];
+    const rangeData = (data && data[timeRange]) || [];
     return rangeData.map((value, index) => ({
       name: `Day ${index + 1}`,
       value,
