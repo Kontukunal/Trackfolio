@@ -1,26 +1,11 @@
 // src/components/AssetManagement.jsx
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import PortfolioStats  from "./PortfolioStats";
+import PortfolioStats from "./PortfolioStats";
 import AssetImportExport from "./AssetImportExport";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { SortableItem } from "./SortableItem";
 import AssetDetailView from "./AssetDetailView";
 import AssetEditor from "./AssetEditor";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiSettings } from "react-icons/fi";
 import {
   doc,
   collection,
@@ -30,20 +15,26 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
+import AssetFilters from "./AssetFilters";
+import PerformanceComparisonTool from "./PerformanceComparisonTool";
+import FeatureToggle from "./FeatureToggle";
 
-const AssetManagement = ({ marketData }) => {
+const AssetManagement = ({ marketData, onUpdateAssets }) => {
   const { currentUser } = useAuth();
   const [assets, setAssets] = useState([]);
+  const [filteredAssets, setFilteredAssets] = useState([]);
   const [activeAsset, setActiveAsset] = useState(null);
   const [editingAsset, setEditingAsset] = useState(null);
   const [isAddingAsset, setIsAddingAsset] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [widgets, setWidgets] = useState([
-    { id: "portfolio", name: "Portfolio Overview" },
-    { id: "performance", name: "Performance Chart" },
-    { id: "allocation", name: "Asset Allocation" },
-    { id: "watchlist", name: "Watchlist" },
-  ]);
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Feature toggles state
+  const [featureToggles, setFeatureToggles] = useState({
+    assetFilters: true,
+    performanceComparison: true,
+    // Add more feature toggles here as needed
+  });
 
   useEffect(() => {
     const fetchAssets = async () => {
@@ -58,6 +49,7 @@ const AssetManagement = ({ marketData }) => {
           assetsData.push({ id: doc.id, ...doc.data() });
         });
         setAssets(assetsData);
+        setFilteredAssets(assetsData); // Initialize filtered assets with all assets
       } catch (error) {
         console.error("Error fetching assets:", error);
       } finally {
@@ -84,14 +76,20 @@ const AssetManagement = ({ marketData }) => {
           doc(db, "users", currentUser.uid, "assets", asset.id),
           asset
         );
-        setAssets(assets.map((a) => (a.id === asset.id ? asset : a)));
+        const updatedAssets = assets.map((a) =>
+          a.id === asset.id ? asset : a
+        );
+        setAssets(updatedAssets);
+        setFilteredAssets(updatedAssets);
       } else {
         // Add new asset
         const newAssetRef = doc(
           collection(db, "users", currentUser.uid, "assets")
         );
         await setDoc(newAssetRef, asset);
-        setAssets([...assets, { ...asset, id: newAssetRef.id }]);
+        const updatedAssets = [...assets, { ...asset, id: newAssetRef.id }];
+        setAssets(updatedAssets);
+        setFilteredAssets(updatedAssets);
       }
     } catch (error) {
       console.error("Error saving asset:", error);
@@ -104,7 +102,9 @@ const AssetManagement = ({ marketData }) => {
   const handleDeleteAsset = async (assetId) => {
     try {
       await deleteDoc(doc(db, "users", currentUser.uid, "assets", assetId));
-      setAssets(assets.filter((asset) => asset.id !== assetId));
+      const updatedAssets = assets.filter((asset) => asset.id !== assetId);
+      setAssets(updatedAssets);
+      setFilteredAssets(updatedAssets);
       setActiveAsset(null);
     } catch (error) {
       console.error("Error deleting asset:", error);
@@ -148,9 +148,17 @@ const AssetManagement = ({ marketData }) => {
       }
 
       setAssets(newAssets);
+      setFilteredAssets(newAssets);
     } catch (error) {
       console.error("Error importing assets:", error);
     }
+  };
+
+  const toggleFeature = (feature) => {
+    setFeatureToggles((prev) => ({
+      ...prev,
+      [feature]: !prev[feature],
+    }));
   };
 
   if (loading) {
@@ -163,74 +171,137 @@ const AssetManagement = ({ marketData }) => {
 
   return (
     <div className="space-y-6">
-      <PortfolioStats assets={assets} marketData={marketData} />
-
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-          Your Assets
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+          Asset Portfolio
         </h2>
-        <button
-          onClick={handleAddNewAsset}
-          className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
-        >
-          <FiPlus />
-          <span>Add Asset</span>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+            title="Feature settings"
+          >
+            <FiSettings size={20} />
+          </button>
+          <button
+            onClick={handleAddNewAsset}
+            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+          >
+            <FiPlus />
+            <span>Add Asset</span>
+          </button>
+        </div>
       </div>
 
-      {assets.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 text-center">
-          <p className="text-gray-600 dark:text-gray-400">
-            You don't have any assets yet. Add your first asset to get started.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {assets.map((asset) => (
-            <motion.div
-              key={asset.id}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleAssetClick(asset)}
-              className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-lg text-gray-800 dark:text-white">
-                    {asset.symbol}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
-                    {asset.name}
-                  </p>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
-                    {asset.type} • {asset.amount} shares
-                  </p>
-                </div>
-                {marketData[asset.symbol] && (
-                  <div className="text-right">
-                    <p className="font-bold text-gray-800 dark:text-white">
-                      ${marketData[asset.symbol].price.toLocaleString()}
+      <AnimatePresence>
+        {showSettings && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 mb-6 overflow-hidden"
+          >
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              Feature Settings
+            </h3>
+            <div className="space-y-2">
+              <FeatureToggle
+                featureName="Asset Filters"
+                isEnabled={featureToggles.assetFilters}
+                onToggle={() => toggleFeature("assetFilters")}
+                description="Enable advanced filtering and sorting of your assets"
+              />
+              <FeatureToggle
+                featureName="Performance Comparison"
+                isEnabled={featureToggles.performanceComparison}
+                onToggle={() => toggleFeature("performanceComparison")}
+                description="Compare performance of assets against benchmarks"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <PortfolioStats assets={assets} marketData={marketData} />
+
+      {featureToggles.assetFilters && (
+        <AssetFilters
+          assets={assets}
+          onFilter={(filtered) =>
+            setFilteredAssets(
+              Array.isArray(filtered)
+                ? filtered
+                : Object.values(filtered).flat()
+            )
+          }
+          marketData={marketData}
+        />
+      )}
+
+      <div className="grid grid-cols-1 gap-6">
+        {filteredAssets.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 text-center">
+            <p className="text-gray-600 dark:text-gray-400">
+              {assets.length === 0
+                ? "You don't have any assets yet. Add your first asset to get started."
+                : "No assets match your current filters."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredAssets.map((asset) => (
+              <motion.div
+                key={asset.id}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleAssetClick(asset)}
+                className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-800 dark:text-white">
+                      {asset.symbol}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      {asset.name}
                     </p>
-                    <p
-                      className={`text-sm ${
-                        marketData[asset.symbol].changePercent >= 0
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-red-600 dark:text-red-400"
-                      }`}
-                    >
-                      {marketData[asset.symbol].changePercent >= 0 ? "↑" : "↓"}{" "}
-                      {Math.abs(marketData[asset.symbol].changePercent)}%
+                    <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
+                      {asset.type} • {asset.amount} shares
                     </p>
                   </div>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
+                  {marketData[asset.symbol] && (
+                    <div className="text-right">
+                      <p className="font-bold text-gray-800 dark:text-white">
+                        ${marketData[asset.symbol].price.toLocaleString()}
+                      </p>
+                      <p
+                        className={`text-sm ${
+                          marketData[asset.symbol].changePercent >= 0
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-red-600 dark:text-red-400"
+                        }`}
+                      >
+                        {marketData[asset.symbol].changePercent >= 0
+                          ? "↑"
+                          : "↓"}{" "}
+                        {Math.abs(marketData[asset.symbol].changePercent)}%
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <AssetImportExport assets={assets} onImport={handleImportAssets} />
+
+        {featureToggles.performanceComparison && (
+          <PerformanceComparisonTool assets={assets} marketData={marketData} />
+        )}
       </div>
 
       <AnimatePresence>
