@@ -7,51 +7,27 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { FiPieChart } from "react-icons/fi";
+import { motion } from "framer-motion";
 
-const COLORS = ["#3B82F6", "#8B5CF6", "#10B981", "#F59E0B", "#6B7280"];
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884D8",
+  "#82CA9D",
+];
 
-const AssetAllocationChart = ({ data = [], isLoading = false }) => {
-  if (isLoading) {
-    return (
-      <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg h-full">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="font-medium text-gray-700 dark:text-gray-300">
-            Asset Allocation
-          </h4>
-          <FiPieChart className="text-gray-400" />
-        </div>
-        <div className="h-64 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!Array.isArray(data) || data.length === 0) {
-    return (
-      <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg h-full">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="font-medium text-gray-700 dark:text-gray-300">
-            Asset Allocation
-          </h4>
-          <FiPieChart className="text-gray-400" />
-        </div>
-        <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
-          No allocation data available
-        </div>
-      </div>
-    );
-  }
-
+const AssetAllocationChart = ({ data }) => {
   return (
-    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg h-full">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="font-medium text-gray-700 dark:text-gray-300">
-          Asset Allocation
-        </h4>
-        <FiPieChart className="text-gray-400" />
-      </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700"
+    >
+      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+        Asset Allocation
+      </h3>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -64,7 +40,7 @@ const AssetAllocationChart = ({ data = [], isLoading = false }) => {
               fill="#8884d8"
               dataKey="value"
               label={({ name, percent }) =>
-                `${name} ${(percent * 100).toFixed(0)}%`
+                `${name}: ${(percent * 100).toFixed(0)}%`
               }
             >
               {data.map((entry, index) => (
@@ -81,7 +57,7 @@ const AssetAllocationChart = ({ data = [], isLoading = false }) => {
           </PieChart>
         </ResponsiveContainer>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
