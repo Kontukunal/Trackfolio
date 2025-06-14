@@ -2,31 +2,19 @@
 import { motion } from "framer-motion";
 
 const PortfolioSummary = ({ data = {}, marketData = {} }) => {
-  // Provide default values for all required properties
   const {
     totalValue = 0,
-    dayChange = 0,
-    dayChangePercent = 0,
-    overallGain = 0,
-    overallGainPercent = 0,
+    totalGain = 0,
+    bestPerformer = null,
+    worstPerformer = null,
   } = data;
-
-  // Get top performer from market data
-  const topPerformer = marketData
-    ? Object.values(marketData).reduce(
-        (top, current) =>
-          !top ||
-          current.price_change_percentage_24h > top.price_change_percentage_24h
-            ? current
-            : top,
-        null
-      )
-    : null;
 
   const summaryItems = [
     {
       title: "Total Value",
-      value: `$${totalValue.toLocaleString()}`,
+      value: `$${totalValue.toLocaleString(undefined, {
+        maximumFractionDigits: 2,
+      })}`,
       change: null,
       icon: (
         <svg
@@ -45,29 +33,14 @@ const PortfolioSummary = ({ data = {}, marketData = {} }) => {
       ),
     },
     {
-      title: "Today's Change",
-      value: `$${dayChange.toLocaleString()}`,
-      change: dayChangePercent,
-      icon: (
-        <svg
-          className="w-6 h-6 text-blue-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-          />
-        </svg>
-      ),
-    },
-    {
-      title: "Overall Gain",
-      value: `$${overallGain.toLocaleString()}`,
-      change: overallGainPercent,
+      title: "Total Gain/Loss",
+      value: `${totalGain >= 0 ? "+" : ""}$${Math.abs(totalGain).toLocaleString(
+        undefined,
+        {
+          maximumFractionDigits: 2,
+        }
+      )}`,
+      change: totalValue > 0 ? (totalGain / totalValue) * 100 : 0,
       icon: (
         <svg
           className="w-6 h-6 text-green-500"
@@ -85,13 +58,15 @@ const PortfolioSummary = ({ data = {}, marketData = {} }) => {
       ),
     },
     {
-      title: "Top Performer",
-      value: topPerformer
-        ? `${topPerformer.symbol?.toUpperCase()} $${
-            topPerformer.current_price?.toFixed(2) || "N/A"
+      title: "Best Performer",
+      value: bestPerformer
+        ? `${bestPerformer.symbol} ${
+            bestPerformer.gainPercent
+              ? `+${bestPerformer.gainPercent.toFixed(2)}%`
+              : ""
           }`
-        : "Loading...",
-      change: topPerformer?.price_change_percentage_24h,
+        : "--",
+      change: bestPerformer?.gainPercent,
       icon: (
         <svg
           className="w-6 h-6 text-yellow-500"
@@ -108,10 +83,36 @@ const PortfolioSummary = ({ data = {}, marketData = {} }) => {
         </svg>
       ),
     },
+    {
+      title: "Worst Performer",
+      value: worstPerformer
+        ? `${worstPerformer.symbol} ${
+            worstPerformer.gainPercent
+              ? `${worstPerformer.gainPercent.toFixed(2)}%`
+              : ""
+          }`
+        : "--",
+      change: worstPerformer?.gainPercent,
+      icon: (
+        <svg
+          className="w-6 h-6 text-red-500"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"
+          />
+        </svg>
+      ),
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {summaryItems.map((item, index) => (
         <motion.div
           key={index}
@@ -143,10 +144,11 @@ const PortfolioSummary = ({ data = {}, marketData = {} }) => {
                     : "text-red-600 dark:text-red-400"
                 }`}
               >
-                {item.change >= 0 ? "↑" : "↓"} {Math.abs(item.change)}%
+                {item.change >= 0 ? "↑" : "↓"}{" "}
+                {Math.abs(item.change).toFixed(2)}%
               </span>
               <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">
-                vs yesterday
+                {item.title.includes("Performer") ? "total change" : ""}
               </span>
             </div>
           )}
