@@ -1,7 +1,7 @@
 // src/components/AssetManagement.jsx
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import PortfolioStats from "./PortfolioStats";
+import PortfolioStats  from "./PortfolioStats";
 import AssetImportExport from "./AssetImportExport";
 import {
   DndContext,

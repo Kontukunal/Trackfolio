@@ -1,9 +1,9 @@
 // src/components/Dashboard.jsx
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import PortfolioSummary from "./PortfolioSummary";
-import PerformanceChart from "./PerformanceChart";
-import AssetAllocationChart from "./AssetAllocationChart";
+import {PortfolioSummary} from "./PortfolioSummary";
+import {PerformanceChart} from "./PerformanceChart";
+import {AssetAllocationChart} from "./AssetAllocationChart";
 import RecentTransactions from "./RecentTransactions";
 import MarketOverview from "./MarketOverview";
 import Watchlist from "./Watchlist";
