@@ -1,171 +1,190 @@
-// src/components/AssetEditor.jsx
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { FiX } from "react-icons/fi";
+import { useTheme } from "../context/ThemeContext";
 
 const AssetEditor = ({ asset, onSave, onClose }) => {
-  const [editedAsset, setEditedAsset] = useState({ ...asset });
-
-  useEffect(() => {
-    setEditedAsset({ ...asset });
-  }, [asset]);
+  const { theme, themeConfig } = useTheme();
+  const [formData, setFormData] = useState(
+    asset || {
+      symbol: "",
+      name: "",
+      type: "Stock",
+      amount: 0,
+      averageCost: 0,
+      purchaseDate: new Date().toISOString().split("T")[0],
+    }
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setEditedAsset((prev) => ({
-      ...prev,
+    setFormData({
+      ...formData,
       [name]:
-        name === "amount" || name === "averageCost"
-          ? parseFloat(value) || 0
-          : value,
-    }));
+        name === "amount" || name === "averageCost" ? parseFloat(value) : value,
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(editedAsset);
+    onSave(formData);
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-    >
+    <AnimatePresence>
       <motion.div
-        initial={{ scale: 0.9 }}
-        animate={{ scale: 1 }}
-        exit={{ scale: 0.9 }}
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       >
-        <div className="sticky top-0 bg-white dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-            Edit Asset
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
-          >
-            <FiX size={20} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Symbol
-            </label>
-            <input
-              type="text"
-              name="symbol"
-              value={editedAsset.symbol}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={editedAsset.name}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Type
-              </label>
-              <select
-                name="type"
-                value={editedAsset.type}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-              >
-                <option value="Stock">Stock</option>
-                <option value="Crypto">Cryptocurrency</option>
-                <option value="ETF">ETF</option>
-                <option value="Bond">Bond</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Amount
-              </label>
-              <input
-                type="number"
-                name="amount"
-                value={editedAsset.amount}
-                onChange={handleChange}
-                step="any"
-                min="0"
-                required
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Avg. Cost
-              </label>
-              <input
-                type="number"
-                name="averageCost"
-                value={editedAsset.averageCost}
-                onChange={handleChange}
-                step="0.01"
-                min="0"
-                required
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Purchase Date
-              </label>
-              <input
-                type="date"
-                name="purchaseDate"
-                value={editedAsset.purchaseDate}
-                onChange={handleChange}
-                required
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4">
+        <motion.div
+          initial={{ scale: 0.9, y: 20 }}
+          animate={{ scale: 1, y: 0 }}
+          exit={{ scale: 0.9, y: 20 }}
+          className={`${themeConfig[theme].card} rounded-lg shadow-lg w-full max-w-md relative`}
+        >
+          <div className="flex justify-between items-center p-4 border-b">
+            <h3
+              className={`text-lg font-semibold ${themeConfig[theme].textPrimary}`}
+            >
+              {asset?.id ? "Edit Asset" : "Add New Asset"}
+            </h3>
             <button
-              type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white rounded-md hover:bg-gray-300 dark:hover:bg-gray-500"
+              className={`p-1 rounded-full ${themeConfig[theme].textSecondary} hover:${themeConfig[theme].bgTertiary}`}
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-            >
-              Save Changes
+              <FiX size={20} />
             </button>
           </div>
-        </form>
+
+          <form onSubmit={handleSubmit} className="p-6">
+            <div className="space-y-4">
+              <div>
+                <label
+                  className={`block text-sm font-medium ${themeConfig[theme].textSecondary} mb-1`}
+                >
+                  Symbol
+                </label>
+                <input
+                  type="text"
+                  name="symbol"
+                  value={formData.symbol}
+                  onChange={handleChange}
+                  className={`w-full ${themeConfig[theme].inputBg} ${themeConfig[theme].borderPrimary} rounded-md shadow-sm py-2 px-3 border`}
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  className={`block text-sm font-medium ${themeConfig[theme].textSecondary} mb-1`}
+                >
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className={`w-full ${themeConfig[theme].inputBg} ${themeConfig[theme].borderPrimary} rounded-md shadow-sm py-2 px-3 border`}
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  className={`block text-sm font-medium ${themeConfig[theme].textSecondary} mb-1`}
+                >
+                  Type
+                </label>
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  className={`w-full ${themeConfig[theme].inputBg} ${themeConfig[theme].borderPrimary} rounded-md shadow-sm py-2 px-3 border`}
+                >
+                  <option value="Stock">Stock</option>
+                  <option value="Crypto">Cryptocurrency</option>
+                  <option value="ETF">ETF</option>
+                  <option value="Commodity">Commodity</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    className={`block text-sm font-medium ${themeConfig[theme].textSecondary} mb-1`}
+                  >
+                    Amount
+                  </label>
+                  <input
+                    type="number"
+                    name="amount"
+                    value={formData.amount}
+                    onChange={handleChange}
+                    step="any"
+                    min="0"
+                    className={`w-full ${themeConfig[theme].inputBg} ${themeConfig[theme].borderPrimary} rounded-md shadow-sm py-2 px-3 border`}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    className={`block text-sm font-medium ${themeConfig[theme].textSecondary} mb-1`}
+                  >
+                    Avg. Cost
+                  </label>
+                  <input
+                    type="number"
+                    name="averageCost"
+                    value={formData.averageCost}
+                    onChange={handleChange}
+                    step="any"
+                    min="0"
+                    className={`w-full ${themeConfig[theme].inputBg} ${themeConfig[theme].borderPrimary} rounded-md shadow-sm py-2 px-3 border`}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  className={`block text-sm font-medium ${themeConfig[theme].textSecondary} mb-1`}
+                >
+                  Purchase Date
+                </label>
+                <input
+                  type="date"
+                  name="purchaseDate"
+                  value={formData.purchaseDate}
+                  onChange={handleChange}
+                  className={`w-full ${themeConfig[theme].inputBg} ${themeConfig[theme].borderPrimary} rounded-md shadow-sm py-2 px-3 border`}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className={`px-4 py-2 ${themeConfig[theme].buttonSecondary} rounded-md`}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className={`px-4 py-2 ${themeConfig[theme].button} rounded-md`}
+              >
+                Save Asset
+              </button>
+            </div>
+          </form>
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </AnimatePresence>
   );
 };
 

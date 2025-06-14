@@ -1,5 +1,3 @@
-// src/App.jsx
-
 import { useState, useEffect } from "react";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { auth } from "./firebase";
@@ -12,13 +10,13 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Dashboard from "./components/Dashboard";
-import { Login } from "./components/Login";
+import {Login} from "./components/Login";
 import { Signup } from "./components/Signup";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { FiSun, FiMoon, FiLogOut } from "react-icons/fi";
 
 const AppContent = () => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, themeConfig } = useTheme();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -41,9 +39,7 @@ const AppContent = () => {
   if (loading) {
     return (
       <div
-        className={`min-h-screen flex items-center justify-center ${
-          theme === "dark" ? "bg-gray-900" : "bg-gray-50"
-        }`}
+        className={`min-h-screen flex items-center justify-center ${themeConfig[theme].bgPrimary}`}
       >
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
@@ -53,21 +49,17 @@ const AppContent = () => {
   return (
     <Router>
       <div
-        className={`min-h-screen ${
-          theme === "dark"
-            ? "bg-gray-900 text-gray-100"
-            : "bg-gray-50 text-gray-800"
-        }`}
+        className={`min-h-screen ${themeConfig[theme].bgPrimary} ${themeConfig[theme].textPrimary}`}
       >
         {user ? (
           <>
             <header
               className={`${
-                theme === "dark" ? "bg-gray-800" : "bg-indigo-600 text-white"
+                theme === "dark" ? "bg-gray-800" : "bg-indigo-600"
               } p-4 shadow-md sticky top-0 z-10`}
             >
               <div className="container mx-auto flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Trackfolio</h1>
+                <h1 className="text-2xl font-bold text-white">Trackfolio</h1>
                 <div className="flex items-center space-x-4">
                   <button
                     onClick={toggleTheme}
@@ -83,16 +75,12 @@ const AppContent = () => {
                       <FiMoon size={20} />
                     )}
                   </button>
-                  <div className="hidden md:flex items-center space-x-2">
+                  <div className="hidden md:flex items-center space-x-2 text-white">
                     <span>{user.email}</span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className={`p-2 rounded-full ${
-                      theme === "dark"
-                        ? "hover:bg-gray-700"
-                        : "hover:bg-indigo-700"
-                    }`}
+                    className={`p-2 rounded-full text-white hover:bg-opacity-80`}
                   >
                     <FiLogOut size={20} />
                   </button>

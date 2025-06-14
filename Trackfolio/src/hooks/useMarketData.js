@@ -96,7 +96,7 @@ export const useMarketData = (symbols) => {
   useEffect(() => {
     isMountedRef.current = true;
 
-    const mainInterval = setInterval(fetchData, 30000); // 30 seconds for most data
+    const mainInterval = setInterval(fetchData, 60000); // 60 seconds for most data
     const fastUpdateInterval = setInterval(() => {
       setMarketData((prev) => {
         const updatedData = { ...prev };

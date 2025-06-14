@@ -1,5 +1,4 @@
-// src/components/AssetManagement.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PortfolioStats from "./PortfolioStats";
 import AssetImportExport from "./AssetImportExport";
@@ -18,24 +17,77 @@ import { useAuth } from "../context/AuthContext";
 import AssetFilters from "./AssetFilters";
 import PerformanceComparisonTool from "./PerformanceComparisonTool";
 import FeatureToggle from "./FeatureToggle";
+import { useTheme } from "../context/ThemeContext";
 
-const AssetManagement = ({ marketData, onUpdateAssets }) => {
+const AssetManagement = ({ marketData }) => {
+  const { theme, themeConfig } = useTheme();
   const { currentUser } = useAuth();
   const [assets, setAssets] = useState([]);
-  const [filteredAssets, setFilteredAssets] = useState([]);
   const [activeAsset, setActiveAsset] = useState(null);
   const [editingAsset, setEditingAsset] = useState(null);
   const [isAddingAsset, setIsAddingAsset] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-
-  // Feature toggles state
   const [featureToggles, setFeatureToggles] = useState({
     assetFilters: true,
     performanceComparison: true,
-    // Add more feature toggles here as needed
   });
+  const [filters, setFilters] = useState({});
 
+  // Memoize filtered assets based on filters and assets
+  const filteredAssets = useMemo(() => {
+    if (!filters || Object.keys(filters).length === 0) {
+      return assets;
+    }
+
+    let result = [...assets];
+
+    // Apply search filter if present
+    if (filters.searchTerm) {
+      const searchTermLower = filters.searchTerm.toLowerCase();
+      result = result.filter(
+        (asset) =>
+          asset.symbol.toLowerCase().includes(searchTermLower) ||
+          asset.name.toLowerCase().includes(searchTermLower)
+      );
+    }
+
+    // Apply type filter if types are selected
+    if (filters.selectedTypes?.length > 0) {
+      result = result.filter((asset) =>
+        filters.selectedTypes.includes(asset.type)
+      );
+    }
+
+    // Apply performance filter if set
+    if (filters.performanceFilter) {
+      result = result.filter((asset) => {
+        if (!marketData[asset.symbol]) return false;
+
+        const currentValue = asset.amount * marketData[asset.symbol].price;
+        const costBasis = asset.amount * asset.averageCost;
+        const gainPercent =
+          costBasis > 0 ? ((currentValue - costBasis) / costBasis) * 100 : 0;
+
+        switch (filters.performanceFilter) {
+          case "topGainers":
+            return gainPercent > 0;
+          case "topLosers":
+            return gainPercent < 0;
+          case "highestGain":
+            return gainPercent >= 10;
+          case "lowestLoss":
+            return gainPercent <= -5;
+          default:
+            return true;
+        }
+      });
+    }
+
+    return result;
+  }, [assets, filters, marketData]);
+
+  // Fetch assets from Firestore
   useEffect(() => {
     const fetchAssets = async () => {
       if (!currentUser) return;
@@ -49,7 +101,6 @@ const AssetManagement = ({ marketData, onUpdateAssets }) => {
           assetsData.push({ id: doc.id, ...doc.data() });
         });
         setAssets(assetsData);
-        setFilteredAssets(assetsData); // Initialize filtered assets with all assets
       } catch (error) {
         console.error("Error fetching assets:", error);
       } finally {
@@ -60,6 +111,11 @@ const AssetManagement = ({ marketData, onUpdateAssets }) => {
     fetchAssets();
   }, [currentUser]);
 
+  // Stable filter handler
+  const handleFilterChange = useCallback((newFilters) => {
+    setFilters(newFilters);
+  }, []);
+
   const handleAssetClick = (asset) => {
     setActiveAsset(asset);
   };
@@ -68,50 +124,59 @@ const AssetManagement = ({ marketData, onUpdateAssets }) => {
     setActiveAsset(null);
   };
 
-  const handleSaveAsset = async (asset) => {
-    try {
-      if (asset.id) {
-        // Update existing asset
-        await setDoc(
-          doc(db, "users", currentUser.uid, "assets", asset.id),
-          asset
-        );
-        const updatedAssets = assets.map((a) =>
-          a.id === asset.id ? asset : a
-        );
-        setAssets(updatedAssets);
-        setFilteredAssets(updatedAssets);
-      } else {
-        // Add new asset
-        const newAssetRef = doc(
-          collection(db, "users", currentUser.uid, "assets")
-        );
-        await setDoc(newAssetRef, asset);
-        const updatedAssets = [...assets, { ...asset, id: newAssetRef.id }];
-        setAssets(updatedAssets);
-        setFilteredAssets(updatedAssets);
+  const handleSaveAsset = useCallback(
+    async (asset) => {
+      if (!currentUser) return;
+
+      try {
+        if (asset.id) {
+          // Update existing asset
+          await setDoc(
+            doc(db, "users", currentUser.uid, "assets", asset.id),
+            asset
+          );
+          setAssets((prevAssets) =>
+            prevAssets.map((a) => (a.id === asset.id ? asset : a))
+          );
+        } else {
+          // Add new asset
+          const newAssetRef = doc(
+            collection(db, "users", currentUser.uid, "assets")
+          );
+          await setDoc(newAssetRef, asset);
+          setAssets((prevAssets) => [
+            ...prevAssets,
+            { ...asset, id: newAssetRef.id },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error saving asset:", error);
+      } finally {
+        setEditingAsset(null);
+        setIsAddingAsset(false);
       }
-    } catch (error) {
-      console.error("Error saving asset:", error);
-    } finally {
-      setEditingAsset(null);
-      setIsAddingAsset(false);
-    }
-  };
+    },
+    [currentUser]
+  );
 
-  const handleDeleteAsset = async (assetId) => {
-    try {
-      await deleteDoc(doc(db, "users", currentUser.uid, "assets", assetId));
-      const updatedAssets = assets.filter((asset) => asset.id !== assetId);
-      setAssets(updatedAssets);
-      setFilteredAssets(updatedAssets);
-      setActiveAsset(null);
-    } catch (error) {
-      console.error("Error deleting asset:", error);
-    }
-  };
+  const handleDeleteAsset = useCallback(
+    async (assetId) => {
+      if (!currentUser) return;
 
-  const handleAddNewAsset = () => {
+      try {
+        await deleteDoc(doc(db, "users", currentUser.uid, "assets", assetId));
+        setAssets((prevAssets) =>
+          prevAssets.filter((asset) => asset.id !== assetId)
+        );
+        setActiveAsset(null);
+      } catch (error) {
+        console.error("Error deleting asset:", error);
+      }
+    },
+    [currentUser]
+  );
+
+  const handleAddNewAsset = useCallback(() => {
     setEditingAsset({
       symbol: "",
       name: "",
@@ -121,45 +186,49 @@ const AssetManagement = ({ marketData, onUpdateAssets }) => {
       purchaseDate: new Date().toISOString().split("T")[0],
     });
     setIsAddingAsset(true);
-  };
+  }, []);
 
-  const handleImportAssets = async (importedAssets) => {
-    try {
-      // First delete all existing assets
-      const batch = [];
-      const querySnapshot = await getDocs(
-        collection(db, "users", currentUser.uid, "assets")
-      );
+  const handleImportAssets = useCallback(
+    async (importedAssets) => {
+      if (!currentUser) return;
 
-      querySnapshot.forEach((doc) => {
-        batch.push(deleteDoc(doc.ref));
-      });
-
-      await Promise.all(batch);
-
-      // Then add the new imported assets
-      const newAssets = [];
-      for (const asset of importedAssets) {
-        const newAssetRef = doc(
+      try {
+        // First delete all existing assets
+        const batch = [];
+        const querySnapshot = await getDocs(
           collection(db, "users", currentUser.uid, "assets")
         );
-        await setDoc(newAssetRef, asset);
-        newAssets.push({ ...asset, id: newAssetRef.id });
+
+        querySnapshot.forEach((doc) => {
+          batch.push(deleteDoc(doc.ref));
+        });
+
+        await Promise.all(batch);
+
+        // Then add the new imported assets
+        const newAssets = [];
+        for (const asset of importedAssets) {
+          const newAssetRef = doc(
+            collection(db, "users", currentUser.uid, "assets")
+          );
+          await setDoc(newAssetRef, asset);
+          newAssets.push({ ...asset, id: newAssetRef.id });
+        }
+
+        setAssets(newAssets);
+      } catch (error) {
+        console.error("Error importing assets:", error);
       }
+    },
+    [currentUser]
+  );
 
-      setAssets(newAssets);
-      setFilteredAssets(newAssets);
-    } catch (error) {
-      console.error("Error importing assets:", error);
-    }
-  };
-
-  const toggleFeature = (feature) => {
+  const toggleFeature = useCallback((feature) => {
     setFeatureToggles((prev) => ({
       ...prev,
       [feature]: !prev[feature],
     }));
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -172,20 +241,20 @@ const AssetManagement = ({ marketData, onUpdateAssets }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+        <h2 className={`text-2xl font-bold ${themeConfig[theme].textPrimary}`}>
           Asset Portfolio
         </h2>
         <div className="flex gap-2">
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+            className={`p-2 rounded-md ${themeConfig[theme].buttonSecondary}`}
             title="Feature settings"
           >
             <FiSettings size={20} />
           </button>
           <button
             onClick={handleAddNewAsset}
-            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+            className={`flex items-center space-x-2 px-4 py-2 ${themeConfig[theme].button} rounded-md transition`}
           >
             <FiPlus />
             <span>Add Asset</span>
@@ -200,9 +269,11 @@ const AssetManagement = ({ marketData, onUpdateAssets }) => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 mb-6 overflow-hidden"
+            className={`${themeConfig[theme].card} p-4 rounded-lg shadow-sm mb-6 overflow-hidden`}
           >
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+            <h3
+              className={`text-lg font-medium ${themeConfig[theme].textPrimary} mb-4`}
+            >
               Feature Settings
             </h3>
             <div className="space-y-2">
@@ -228,21 +299,17 @@ const AssetManagement = ({ marketData, onUpdateAssets }) => {
       {featureToggles.assetFilters && (
         <AssetFilters
           assets={assets}
-          onFilter={(filtered) =>
-            setFilteredAssets(
-              Array.isArray(filtered)
-                ? filtered
-                : Object.values(filtered).flat()
-            )
-          }
+          onFilter={handleFilterChange}
           marketData={marketData}
         />
       )}
 
       <div className="grid grid-cols-1 gap-6">
         {filteredAssets.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 text-center">
-            <p className="text-gray-600 dark:text-gray-400">
+          <div
+            className={`${themeConfig[theme].card} p-8 rounded-lg shadow-sm text-center`}
+          >
+            <p className={themeConfig[theme].textSecondary}>
               {assets.length === 0
                 ? "You don't have any assets yet. Add your first asset to get started."
                 : "No assets match your current filters."}
@@ -256,23 +323,29 @@ const AssetManagement = ({ marketData, onUpdateAssets }) => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleAssetClick(asset)}
-                className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer"
+                className={`${themeConfig[theme].card} p-4 rounded-lg shadow-sm cursor-pointer`}
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-bold text-lg text-gray-800 dark:text-white">
+                    <h3
+                      className={`font-bold text-lg ${themeConfig[theme].textPrimary}`}
+                    >
                       {asset.symbol}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    <p className={themeConfig[theme].textSecondary}>
                       {asset.name}
                     </p>
-                    <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
+                    <p
+                      className={`${themeConfig[theme].textTertiary} text-xs mt-1`}
+                    >
                       {asset.type} • {asset.amount} shares
                     </p>
                   </div>
                   {marketData[asset.symbol] && (
                     <div className="text-right">
-                      <p className="font-bold text-gray-800 dark:text-white">
+                      <p
+                        className={`font-bold ${themeConfig[theme].textPrimary}`}
+                      >
                         ${marketData[asset.symbol].price.toLocaleString()}
                       </p>
                       <p
