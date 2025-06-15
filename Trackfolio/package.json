@@ -14,12 +14,17 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@headlessui/react": "^2.2.4",
+    "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/vite": "^4.1.8",
+    "@tsparticles/react": "^3.0.0",
+    "autoprefixer": "^10.4.21",
     "chart.js": "^4.4.9",
     "date-fns": "^4.1.0",
     "firebase": "^11.9.1",
-    "framer-motion": "^12.17.3",
+    "framer-motion": "^12.18.1",
     "motion": "^12.16.0",
+    "particles.js": "^2.0.0",
+    "postcss": "^8.5.5",
     "react": "^19.1.0",
     "react-chartjs-2": "^5.3.0",
     "react-device-detect": "^2.2.3",
@@ -30,10 +35,13 @@
     "react-error-boundary": "^6.0.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.6.2",
+    "react-sparklines": "^1.7.0",
     "react-tabs": "^6.1.0",
     "react-toastify": "^11.0.5",
+    "react-tsparticles": "^2.12.2",
     "recharts": "^2.15.3",
-    "tailwindcss": "^4.1.8"
+    "tailwindcss-animate": "^1.0.7",
+    "tsparticles": "^3.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
@@ -44,6 +52,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "tailwindcss": "^4.1.10",
     "vite": "^6.3.5"
   }
 }

@@ -133,7 +133,7 @@ export const useMarketData = (symbols) => {
       clearInterval(mainInterval);
       clearInterval(fastUpdateInterval);
     };
-  }, []); // Empty dependency array - functions are stable
+  }, []); 
 
   return { marketData, loading, lastUpdated, refreshData };
 };
