@@ -54,107 +54,167 @@ export const Signup = () => {
 
   return (
     <div
-      className={`max-w-md mx-auto mt-10 p-6 ${themeConfig[theme].card} rounded-lg shadow-md`}
+      className={`min-h-screen flex items-center justify-center p-4 ${themeConfig[theme].bgPrimary}`}
     >
-      <h2
-        className={`text-2xl font-bold mb-6 text-center ${themeConfig[theme].textPrimary}`}
+      <div
+        className={`w-full max-w-md p-8 space-y-6 rounded-xl shadow-lg ${themeConfig[theme].card} transition-all duration-300 transform hover:shadow-xl`}
       >
-        Create Account
-      </h2>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label
-            className={`block text-sm font-medium ${themeConfig[theme].textSecondary}`}
+        <div className="text-center">
+          <h2
+            className={`text-3xl font-extrabold ${themeConfig[theme].textPrimary} mb-2`}
           >
-            Email
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className={`mt-1 block w-full px-3 py-2 ${themeConfig[theme].borderPrimary} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${themeConfig[theme].inputBg}`}
-          />
+            Create Account
+          </h2>
+          <p className={`text-sm ${themeConfig[theme].textSecondary}`}>
+            Join Trackfolio to get started
+          </p>
         </div>
 
-        <div>
-          <label
-            className={`block text-sm font-medium ${themeConfig[theme].textSecondary}`}
-          >
-            Password
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength="6"
-            className={`mt-1 block w-full px-3 py-2 ${themeConfig[theme].borderPrimary} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${themeConfig[theme].inputBg}`}
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label
+              className={`block text-sm font-medium ${themeConfig[theme].textSecondary}`}
+            >
+              Email Address
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="Enter your email"
+              className={`mt-1 block w-full px-4 py-3 ${themeConfig[theme].borderPrimary} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 ${themeConfig[theme].inputBg} transition duration-200`}
+            />
+          </div>
 
-        <div>
-          <label
-            className={`block text-sm font-medium ${themeConfig[theme].textSecondary}`}
-          >
-            Confirm Password
-          </label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            minLength="6"
-            className={`mt-1 block w-full px-3 py-2 ${themeConfig[theme].borderPrimary} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${themeConfig[theme].inputBg}`}
-          />
-        </div>
+          <div className="space-y-2">
+            <label
+              className={`block text-sm font-medium ${themeConfig[theme].textSecondary}`}
+            >
+              Password
+              <span className="text-xs text-gray-500 ml-1">
+                (min 6 characters)
+              </span>
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength="6"
+              placeholder="Create a password"
+              className={`mt-1 block w-full px-4 py-3 ${themeConfig[theme].borderPrimary} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 ${themeConfig[theme].inputBg} transition duration-200`}
+            />
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${themeConfig[theme].button} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50`}
-        >
-          {loading ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
+          <div className="space-y-2">
+            <label
+              className={`block text-sm font-medium ${themeConfig[theme].textSecondary}`}
+            >
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength="6"
+              placeholder="Confirm your password"
+              className={`mt-1 block w-full px-4 py-3 ${themeConfig[theme].borderPrimary} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 ${themeConfig[theme].inputBg} transition duration-200`}
+            />
+          </div>
+
+          <div className="flex items-start">
+            <div className="flex items-center h-5">
+              <input
+                id="terms"
+                name="terms"
+                type="checkbox"
+                required
+                className={`focus:ring-2 focus:ring-opacity-50 h-4 w-4 ${themeConfig[theme].borderPrimary} rounded ${themeConfig[theme].inputBg}`}
+              />
+            </div>
+            <div className="ml-3 text-sm">
+              <label
+                htmlFor="terms"
+                className={`${themeConfig[theme].textSecondary}`}
               >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Creating account...
-            </>
-          ) : (
-            "Sign up"
-          )}
-        </button>
-      </form>
+                I agree to the{" "}
+                <span
+                  className={`${themeConfig[theme].accentText} hover:underline cursor-pointer`}
+                >
+                  Terms
+                </span>{" "}
+                and{" "}
+                <span
+                  className={`${themeConfig[theme].accentText} hover:underline cursor-pointer`}
+                >
+                  Privacy Policy
+                </span>
+              </label>
+            </div>
+          </div>
 
-      <div className="mt-4 text-center">
-        <p className={`text-sm ${themeConfig[theme].textTertiary}`}>
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className={`font-medium ${themeConfig[theme].accentText} hover:${themeConfig[theme].accentTextHover}`}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full flex justify-center items-center py-3 px-4 rounded-lg shadow-sm text-sm font-medium text-white ${themeConfig[theme].button} hover:${themeConfig[theme].buttonHover} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-50 disabled:opacity-70 transition duration-200`}
           >
-            Login
-          </Link>
-        </p>
+            {loading ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Creating account...
+              </>
+            ) : (
+              "Sign up"
+            )}
+          </button>
+        </form>
+
+        <div className="relative flex items-center justify-center">
+          <div
+            className={`flex-grow border-t ${themeConfig[theme].borderPrimary}`}
+          ></div>
+          <span
+            className={`flex-shrink mx-4 text-sm ${themeConfig[theme].textTertiary}`}
+          >
+            OR
+          </span>
+          <div
+            className={`flex-grow border-t ${themeConfig[theme].borderPrimary}`}
+          ></div>
+        </div>
+
+        <div className="text-center">
+          <p className={`text-sm ${themeConfig[theme].textTertiary}`}>
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className={`font-medium ${themeConfig[theme].accentText} hover:underline`}
+            >
+              Login
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

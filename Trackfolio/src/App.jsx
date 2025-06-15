@@ -10,10 +10,12 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Dashboard from "./components/Dashboard";
-import {Login} from "./components/Login";
+import { Login } from "./components/Login";
 import { Signup } from "./components/Signup";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { FiSun, FiMoon, FiLogOut } from "react-icons/fi";
+import { FiSun, FiMoon, FiLogOut, FiUser, FiPieChart } from "react-icons/fi";
+import { BsGraphUp } from "react-icons/bs";
+import { RiNewspaperLine } from "react-icons/ri";
 
 const AppContent = () => {
   const { theme, toggleTheme, themeConfig } = useTheme();
@@ -49,25 +51,30 @@ const AppContent = () => {
   return (
     <Router>
       <div
-        className={`min-h-screen ${themeConfig[theme].bgPrimary} ${themeConfig[theme].textPrimary}`}
+        className={`min-h-screen ${themeConfig[theme].bgPrimary} ${themeConfig[theme].textPrimary} transition-colors duration-200`}
       >
         {user ? (
           <>
             <header
               className={`${
-                theme === "dark" ? "bg-gray-800" : "bg-indigo-600"
-              } p-4 shadow-md sticky top-0 z-10`}
+                theme === "dark" ? "bg-gray-800" : "bg-white"
+              } p-4 shadow-sm sticky top-0 z-10 border-b ${
+                theme === "dark" ? "border-gray-700" : "border-gray-200"
+              }`}
             >
               <div className="container mx-auto flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-white">Trackfolio</h1>
+                <div className="flex items-center space-x-2">
+                  <FiPieChart className="text-indigo-600" size={24} />
+                  <h1 className="text-xl font-bold">Trackfolio</h1>
+                </div>
                 <div className="flex items-center space-x-4">
                   <button
                     onClick={toggleTheme}
                     className={`p-2 rounded-full ${
                       theme === "dark"
-                        ? "bg-gray-700 text-yellow-400"
-                        : "bg-indigo-700 text-white"
-                    }`}
+                        ? "text-gray-300 hover:bg-gray-700"
+                        : "text-gray-600 hover:bg-gray-100"
+                    } transition-colors`}
                   >
                     {theme === "dark" ? (
                       <FiSun size={20} />
@@ -75,12 +82,34 @@ const AppContent = () => {
                       <FiMoon size={20} />
                     )}
                   </button>
-                  <div className="hidden md:flex items-center space-x-2 text-white">
-                    <span>{user.email}</span>
+                  <div className="hidden md:flex items-center space-x-2">
+                    <div
+                      className={`p-2 rounded-full ${
+                        theme === "dark" ? "bg-gray-700" : "bg-gray-100"
+                      }`}
+                    >
+                      <FiUser
+                        className={
+                          theme === "dark" ? "text-gray-300" : "text-gray-600"
+                        }
+                        size={18}
+                      />
+                    </div>
+                    <span
+                      className={
+                        theme === "dark" ? "text-gray-300" : "text-gray-700"
+                      }
+                    >
+                      {user.email}
+                    </span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className={`p-2 rounded-full text-white hover:bg-opacity-80`}
+                    className={`p-2 rounded-full ${
+                      theme === "dark"
+                        ? "text-gray-300 hover:bg-gray-700"
+                        : "text-gray-600 hover:bg-gray-100"
+                    } transition-colors`}
                   >
                     <FiLogOut size={20} />
                   </button>
@@ -88,7 +117,7 @@ const AppContent = () => {
               </div>
             </header>
 
-            <main className="container mx-auto py-8 px-4">
+            <main className="container mx-auto py-6 px-4">
               <ErrorBoundary>
                 <Routes>
                   <Route path="/" element={<Dashboard />} />

@@ -23,16 +23,16 @@ import { db } from "../firebase";
 import { useTheme } from "../context/ThemeContext";
 
 const COLORS = [
-  "#0088FE",
-  "#00C49F",
-  "#FFBB28",
-  "#FF8042",
-  "#8884D8",
-  "#82CA9D",
+  "#0088FE", // Blue
+  "#00C49F", // Teal
+  "#FFBB28", // Yellow
+  "#FF8042", // Orange
+  "#8884D8", // Purple
+  "#82CA9D", // Green
 ];
 
 const PortfolioOverview = () => {
-  const { theme, themeConfig } = useTheme();
+  const { theme } = useTheme();
   const { currentUser } = useAuth();
   const [assets, setAssets] = useState([]);
   const [timeRange, setTimeRange] = useState("1M");
@@ -45,7 +45,38 @@ const PortfolioOverview = () => {
     "BTC",
     "ETH",
   ]);
-  const [historicalData, setHistoricalData] = useState([]);
+
+  // Custom theme configurations
+  const themeConfig = {
+    light: {
+      card: "bg-white shadow-lg border border-gray-100",
+      textPrimary: "text-gray-800",
+      textSecondary: "text-gray-600",
+      chartBg: "bg-gray-50",
+      accent: "bg-indigo-600",
+      bgTertiary: "bg-gray-100",
+      tooltipBg: "bg-white",
+      tooltipBorder: "border-gray-200",
+      gridColor: "#E5E7EB",
+      axisColor: "#D1D5DB",
+      textColor: "#6B7280",
+    },
+    dark: {
+      card: "bg-gray-800 shadow-lg border border-gray-700",
+      textPrimary: "text-white",
+      textSecondary: "text-gray-300",
+      chartBg: "bg-gray-700",
+      accent: "bg-indigo-500",
+      bgTertiary: "bg-gray-600",
+      tooltipBg: "bg-gray-700",
+      tooltipBorder: "border-gray-600",
+      gridColor: "#4B5563",
+      axisColor: "#6B7280",
+      textColor: "#9CA3AF",
+    },
+  };
+
+  const currentTheme = themeConfig[theme];
 
   useEffect(() => {
     const fetchAssets = async () => {
@@ -110,9 +141,9 @@ const PortfolioOverview = () => {
   const performanceData = generatePerformanceData();
 
   return (
-    <div className={`${themeConfig[theme].card} rounded-lg shadow-sm p-6`}>
+    <div className={`${currentTheme.card} rounded-xl p-6 mb-6`}>
       <div className="flex justify-between items-center mb-6">
-        <h2 className={`text-xl font-bold ${themeConfig[theme].textPrimary}`}>
+        <h2 className={`text-2xl font-bold ${currentTheme.textPrimary}`}>
           Portfolio Overview
         </h2>
         <div className="flex space-x-2">
@@ -120,10 +151,10 @@ const PortfolioOverview = () => {
             <button
               key={range}
               onClick={() => setTimeRange(range)}
-              className={`px-3 py-1 rounded-md text-sm ${
+              className={`px-3 py-1 rounded-md text-sm transition-colors ${
                 timeRange === range
-                  ? `${themeConfig[theme].accent} text-white`
-                  : `${themeConfig[theme].bgTertiary} ${themeConfig[theme].textSecondary}`
+                  ? `${currentTheme.accent} text-white shadow-md`
+                  : `${currentTheme.bgTertiary} ${currentTheme.textSecondary} hover:bg-opacity-80`
               }`}
             >
               {range}
@@ -132,15 +163,17 @@ const PortfolioOverview = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Allocation Chart */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className={`${themeConfig[theme].chartBg} p-4 rounded-lg`}
+          className={`${currentTheme.chartBg} p-4 rounded-lg border ${
+            theme === "light" ? "border-gray-200" : "border-gray-600"
+          }`}
         >
           <h3
-            className={`text-lg font-medium ${themeConfig[theme].textPrimary} mb-4`}
+            className={`text-lg font-semibold ${currentTheme.textPrimary} mb-4`}
           >
             Asset Allocation
           </h3>
@@ -170,17 +203,20 @@ const PortfolioOverview = () => {
                 <Tooltip
                   formatter={(value) => [`$${value.toLocaleString()}`, "Value"]}
                   contentStyle={{
-                    backgroundColor: theme === "dark" ? "#1F2937" : "#FFFFFF",
-                    borderColor: theme === "dark" ? "#374151" : "#E5E7EB",
+                    backgroundColor: currentTheme.tooltipBg,
+                    borderColor: currentTheme.tooltipBorder,
                     borderRadius: "0.5rem",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                   }}
                   itemStyle={{
-                    color: theme === "dark" ? "#F3F4F6" : "#111827",
+                    color: currentTheme.textPrimary,
+                    fontWeight: 500,
                   }}
                 />
                 <Legend
                   wrapperStyle={{
-                    color: theme === "dark" ? "#F3F4F6" : "#111827",
+                    color: currentTheme.textPrimary,
+                    paddingTop: "20px",
                   }}
                 />
               </PieChart>
@@ -192,10 +228,12 @@ const PortfolioOverview = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: { delay: 0.1 } }}
-          className={`${themeConfig[theme].chartBg} p-4 rounded-lg`}
+          className={`${currentTheme.chartBg} p-4 rounded-lg border ${
+            theme === "light" ? "border-gray-200" : "border-gray-600"
+          }`}
         >
           <h3
-            className={`text-lg font-medium ${themeConfig[theme].textPrimary} mb-4`}
+            className={`text-lg font-semibold ${currentTheme.textPrimary} mb-4`}
           >
             Portfolio Performance
           </h3>
@@ -204,13 +242,13 @@ const PortfolioOverview = () => {
               <LineChart data={performanceData}>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke={theme === "dark" ? "#4B5563" : "#E5E7EB"}
+                  stroke={currentTheme.gridColor}
                 />
                 <XAxis
                   dataKey="date"
                   tick={{
                     fontSize: 12,
-                    fill: theme === "dark" ? "#9CA3AF" : "#6B7280",
+                    fill: currentTheme.textColor,
                   }}
                   tickFormatter={(value) => {
                     const date = new Date(value);
@@ -221,15 +259,15 @@ const PortfolioOverview = () => {
                           day: "numeric",
                         });
                   }}
-                  stroke={theme === "dark" ? "#6B7280" : "#D1D5DB"}
+                  stroke={currentTheme.axisColor}
                 />
                 <YAxis
                   tickFormatter={(value) => `$${value.toLocaleString()}`}
                   tick={{
                     fontSize: 12,
-                    fill: theme === "dark" ? "#9CA3AF" : "#6B7280",
+                    fill: currentTheme.textColor,
                   }}
-                  stroke={theme === "dark" ? "#6B7280" : "#D1D5DB"}
+                  stroke={currentTheme.axisColor}
                 />
                 <Tooltip
                   formatter={(value) => [
@@ -238,12 +276,14 @@ const PortfolioOverview = () => {
                   ]}
                   labelFormatter={(label) => `Date: ${label}`}
                   contentStyle={{
-                    backgroundColor: theme === "dark" ? "#1F2937" : "#FFFFFF",
-                    borderColor: theme === "dark" ? "#374151" : "#E5E7EB",
+                    backgroundColor: currentTheme.tooltipBg,
+                    borderColor: currentTheme.tooltipBorder,
                     borderRadius: "0.5rem",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                   }}
                   itemStyle={{
-                    color: theme === "dark" ? "#F3F4F6" : "#111827",
+                    color: currentTheme.textPrimary,
+                    fontWeight: 500,
                   }}
                 />
                 <Line
@@ -252,9 +292,18 @@ const PortfolioOverview = () => {
                   stroke="#8884d8"
                   strokeWidth={2}
                   dot={false}
-                  activeDot={{ r: 6 }}
+                  activeDot={{
+                    r: 6,
+                    stroke: currentTheme.tooltipBg,
+                    strokeWidth: 2,
+                    fill: "#8884d8",
+                  }}
                 />
-                <ReferenceLine y={performanceData[0]?.value} stroke="#82ca9d" />
+                <ReferenceLine
+                  y={performanceData[0]?.value}
+                  stroke="#82ca9d"
+                  strokeDasharray="3 3"
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -266,19 +315,31 @@ const PortfolioOverview = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`mt-6 ${themeConfig[theme].chartBg} p-4 rounded-lg`}
+          className={`mt-6 ${currentTheme.chartBg} p-4 rounded-lg border ${
+            theme === "light" ? "border-gray-200" : "border-gray-600"
+          }`}
         >
           <h3
-            className={`text-lg font-medium ${themeConfig[theme].textPrimary} mb-2`}
+            className={`text-lg font-semibold ${currentTheme.textPrimary} mb-2`}
           >
             {selectedAsset.name} Details
           </h3>
-          <p className={themeConfig[theme].textSecondary}>
-            Value: ${selectedAsset.value.toLocaleString()}
-          </p>
-          <p className={themeConfig[theme].textSecondary}>
-            Percentage: {(selectedAsset.percent * 100).toFixed(1)}%
-          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className={`text-sm ${currentTheme.textSecondary}`}>Value</p>
+              <p className={`font-medium ${currentTheme.textPrimary}`}>
+                ${selectedAsset.value.toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p className={`text-sm ${currentTheme.textSecondary}`}>
+                Percentage
+              </p>
+              <p className={`font-medium ${currentTheme.textPrimary}`}>
+                {(selectedAsset.percent * 100).toFixed(1)}%
+              </p>
+            </div>
+          </div>
         </motion.div>
       )}
     </div>

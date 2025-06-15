@@ -26,70 +26,99 @@ const Dashboard = () => {
   ]);
 
   return (
-    <div className={`space-y-6 ${themeConfig[theme].bgPrimary}`}>
+    <div className={`min-h-screen ${themeConfig[theme].bgPrimary} pb-12`}>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
+        className="px-4 pt-6"
       >
         <PortfolioOverview />
       </motion.div>
 
-      <Tabs>
-        <TabList
-          className={`flex border-b ${themeConfig[theme].borderPrimary}`}
-        >
-          <Tab
-            className={`px-4 py-2 text-sm font-medium ${themeConfig[theme].textSecondary} hover:${themeConfig[theme].textPrimary} focus:outline-none cursor-pointer`}
-            selectedClassName={`${themeConfig[theme].textPrimary} border-b-2 ${themeConfig[theme].accentText} font-semibold`}
+      <div className="px-4 mt-8">
+        <Tabs>
+          <TabList
+            className={`flex space-x-1 rounded-lg p-1 ${
+              theme === "light" ? "bg-gray-100" : "bg-gray-800"
+            }`}
           >
-            My Portfolio
-          </Tab>
-          <Tab
-            className={`px-4 py-2 text-sm font-medium ${themeConfig[theme].textSecondary} hover:${themeConfig[theme].textPrimary} focus:outline-none cursor-pointer`}
-            selectedClassName={`${themeConfig[theme].textPrimary} border-b-2 ${themeConfig[theme].accentText} font-semibold`}
-          >
-            Performance Tools
-          </Tab>
-          <Tab
-            className={`px-4 py-2 text-sm font-medium ${themeConfig[theme].textSecondary} hover:${themeConfig[theme].textPrimary} focus:outline-none cursor-pointer`}
-            selectedClassName={`${themeConfig[theme].textPrimary} border-b-2 ${themeConfig[theme].accentText} font-semibold`}
-          >
-            Market News
-          </Tab>
-        </TabList>
+            <Tab
+              className={`px-4 py-2 text-sm font-medium rounded-md cursor-pointer transition-all duration-200 ${
+                theme === "light"
+                  ? "text-gray-700 hover:bg-white"
+                  : "text-gray-300 hover:bg-gray-700"
+              }`}
+              selectedClassName={`${
+                theme === "light"
+                  ? "bg-white text-indigo-600 shadow-sm"
+                  : "bg-gray-700 text-indigo-400"
+              }`}
+            >
+              My Portfolio
+            </Tab>
+            <Tab
+              className={`px-4 py-2 text-sm font-medium rounded-md cursor-pointer transition-all duration-200 ${
+                theme === "light"
+                  ? "text-gray-700 hover:bg-white"
+                  : "text-gray-300 hover:bg-gray-700"
+              }`}
+              selectedClassName={`${
+                theme === "light"
+                  ? "bg-white text-indigo-600 shadow-sm"
+                  : "bg-gray-700 text-indigo-400"
+              }`}
+            >
+              Performance
+            </Tab>
+            <Tab
+              className={`px-4 py-2 text-sm font-medium rounded-md cursor-pointer transition-all duration-200 ${
+                theme === "light"
+                  ? "text-gray-700 hover:bg-white"
+                  : "text-gray-300 hover:bg-gray-700"
+              }`}
+              selectedClassName={`${
+                theme === "light"
+                  ? "bg-white text-indigo-600 shadow-sm"
+                  : "bg-gray-700 text-indigo-400"
+              }`}
+            >
+              Market News
+            </Tab>
+          </TabList>
 
-        <TabPanel>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="mt-4"
-          >
-            <AssetManagement marketData={marketData} />
-          </motion.div>
-        </TabPanel>
-        <TabPanel>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="mt-4"
-          >
-            <PerformanceComparison />
-          </motion.div>
-        </TabPanel>
-        <TabPanel>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="mt-4"
-          >
-            <MarketNews />
-          </motion.div>
-        </TabPanel>
-      </Tabs>
+          <TabPanel>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="mt-6"
+            >
+              <AssetManagement marketData={marketData} />
+            </motion.div>
+          </TabPanel>
+          <TabPanel>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="mt-6"
+            >
+              <PerformanceComparison />
+            </motion.div>
+          </TabPanel>
+          <TabPanel>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="mt-6"
+            >
+              <MarketNews />
+            </motion.div>
+          </TabPanel>
+        </Tabs>
+      </div>
     </div>
   );
 };

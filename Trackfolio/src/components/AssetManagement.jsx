@@ -34,6 +34,19 @@ const AssetManagement = ({ marketData }) => {
   });
   const [filters, setFilters] = useState({});
 
+  // Custom theme adjustments for light mode
+  const lightModeThemeConfig = {
+    ...themeConfig.light,
+    card: "bg-gray-50 shadow-md",
+    button: "bg-indigo-600 text-white hover:bg-indigo-700",
+    buttonSecondary: "bg-gray-100 text-gray-700 hover:bg-gray-200",
+    inputBg: "bg-white",
+    borderPrimary: "border-gray-200",
+  };
+
+  const currentThemeConfig =
+    theme === "light" ? lightModeThemeConfig : themeConfig.dark;
+
   // Memoize filtered assets based on filters and assets
   const filteredAssets = useMemo(() => {
     if (!filters || Object.keys(filters).length === 0) {
@@ -241,20 +254,20 @@ const AssetManagement = ({ marketData }) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className={`text-2xl font-bold ${themeConfig[theme].textPrimary}`}>
+        <h2 className={`text-2xl font-bold ${currentThemeConfig.textPrimary}`}>
           Asset Portfolio
         </h2>
         <div className="flex gap-2">
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-md ${themeConfig[theme].buttonSecondary}`}
+            className={`p-2 rounded-md ${currentThemeConfig.buttonSecondary}`}
             title="Feature settings"
           >
             <FiSettings size={20} />
           </button>
           <button
             onClick={handleAddNewAsset}
-            className={`flex items-center space-x-2 px-4 py-2 ${themeConfig[theme].button} rounded-md transition`}
+            className={`flex items-center space-x-2 px-4 py-2 ${currentThemeConfig.button} rounded-md transition shadow-sm hover:shadow-md`}
           >
             <FiPlus />
             <span>Add Asset</span>
@@ -269,10 +282,10 @@ const AssetManagement = ({ marketData }) => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className={`${themeConfig[theme].card} p-4 rounded-lg shadow-sm mb-6 overflow-hidden`}
+            className={`${currentThemeConfig.card} p-4 rounded-lg shadow-md mb-6 overflow-hidden border ${currentThemeConfig.borderPrimary}`}
           >
             <h3
-              className={`text-lg font-medium ${themeConfig[theme].textPrimary} mb-4`}
+              className={`text-lg font-medium ${currentThemeConfig.textPrimary} mb-4`}
             >
               Feature Settings
             </h3>
@@ -294,22 +307,27 @@ const AssetManagement = ({ marketData }) => {
         )}
       </AnimatePresence>
 
-      <PortfolioStats assets={assets} marketData={marketData} />
+      <PortfolioStats
+        assets={assets}
+        marketData={marketData}
+        themeConfig={currentThemeConfig}
+      />
 
       {featureToggles.assetFilters && (
         <AssetFilters
           assets={assets}
           onFilter={handleFilterChange}
           marketData={marketData}
+          themeConfig={currentThemeConfig}
         />
       )}
 
       <div className="grid grid-cols-1 gap-6">
         {filteredAssets.length === 0 ? (
           <div
-            className={`${themeConfig[theme].card} p-8 rounded-lg shadow-sm text-center`}
+            className={`${currentThemeConfig.card} p-8 rounded-lg shadow-md text-center border ${currentThemeConfig.borderPrimary}`}
           >
-            <p className={themeConfig[theme].textSecondary}>
+            <p className={currentThemeConfig.textSecondary}>
               {assets.length === 0
                 ? "You don't have any assets yet. Add your first asset to get started."
                 : "No assets match your current filters."}
@@ -323,20 +341,20 @@ const AssetManagement = ({ marketData }) => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleAssetClick(asset)}
-                className={`${themeConfig[theme].card} p-4 rounded-lg shadow-sm cursor-pointer`}
+                className={`${currentThemeConfig.card} p-4 rounded-lg shadow-md cursor-pointer border ${currentThemeConfig.borderPrimary}`}
               >
                 <div className="flex justify-between items-start">
                   <div>
                     <h3
-                      className={`font-bold text-lg ${themeConfig[theme].textPrimary}`}
+                      className={`font-bold text-lg ${currentThemeConfig.textPrimary}`}
                     >
                       {asset.symbol}
                     </h3>
-                    <p className={themeConfig[theme].textSecondary}>
+                    <p className={currentThemeConfig.textSecondary}>
                       {asset.name}
                     </p>
                     <p
-                      className={`${themeConfig[theme].textTertiary} text-xs mt-1`}
+                      className={`${currentThemeConfig.textTertiary} text-xs mt-1`}
                     >
                       {asset.type} • {asset.amount} shares
                     </p>
@@ -344,7 +362,7 @@ const AssetManagement = ({ marketData }) => {
                   {marketData[asset.symbol] && (
                     <div className="text-right">
                       <p
-                        className={`font-bold ${themeConfig[theme].textPrimary}`}
+                        className={`font-bold ${currentThemeConfig.textPrimary}`}
                       >
                         ${marketData[asset.symbol].price.toLocaleString()}
                       </p>
@@ -370,10 +388,18 @@ const AssetManagement = ({ marketData }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AssetImportExport assets={assets} onImport={handleImportAssets} />
+        <AssetImportExport
+          assets={assets}
+          onImport={handleImportAssets}
+          themeConfig={currentThemeConfig}
+        />
 
         {featureToggles.performanceComparison && (
-          <PerformanceComparisonTool assets={assets} marketData={marketData} />
+          <PerformanceComparisonTool
+            assets={assets}
+            marketData={marketData}
+            themeConfig={currentThemeConfig}
+          />
         )}
       </div>
 
@@ -385,6 +411,7 @@ const AssetManagement = ({ marketData }) => {
             onClose={handleCloseDetail}
             onEdit={() => setEditingAsset(activeAsset)}
             onDelete={() => handleDeleteAsset(activeAsset.id)}
+            themeConfig={currentThemeConfig}
           />
         )}
       </AnimatePresence>
@@ -398,6 +425,7 @@ const AssetManagement = ({ marketData }) => {
               setEditingAsset(null);
               setIsAddingAsset(false);
             }}
+            themeConfig={currentThemeConfig}
           />
         )}
       </AnimatePresence>
