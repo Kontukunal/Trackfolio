@@ -15,7 +15,7 @@ const MarketNews = () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `http://api.mediastack.com/v1/news?access_key=1f42334800259608e8c6dadff3543c89&categories=${category}&languages=en&limit=10`
+          `https://api.mediastack.com/v1/news?access_key=1f42334800259608e8c6dadff3543c89&categories=${category}&languages=en&limit=10`
         );
         const data = await response.json();
 
