@@ -1,7 +1,10 @@
-# Investment Portfolio Tracker : https://trackfolio-by-kunal.netlify.app
+# Trackfolio: Investment Portfolio Tracker
 ## 📌 Project Overview
-
 A sleek, responsive investment portfolio tracker that enables users to monitor and manage their diverse investments (stocks, crypto, commodities) with real-time data visualization and performance analytics.
+
+## Deployed App
+**Frontend Live Demo:** https://trackfolio-by-kunal.netlify.app  
+**Video Demo:** https://youtu.be/CJi340bcdzo
 
 
 ![image](https://github.com/user-attachments/assets/32342ece-e76a-4925-b5a7-26e93781d6ff)
